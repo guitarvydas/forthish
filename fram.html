@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fram.py Dictionary Structure</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .title {
+            text-align: center;
+            color: #4CAF50;
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #2d2d2d;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        .ram-array {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 2px;
+            margin: 20px 0;
+            max-width: 800px;
+        }
+        .ram-cell {
+            border: 2px solid #555;
+            padding: 8px;
+            text-align: center;
+            background: #333;
+            position: relative;
+            min-height: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .ram-index {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: #888;
+        }
+        .name-cell { background: #4CAF50; color: black; font-weight: bold; }
+        .link-cell { background: #2196F3; color: white; }
+        .code-cell { background: #FF9800; color: black; }
+        
+        .arrow {
+            position: absolute;
+            color: #FF5722;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .stack {
+            background: #2d2d2d;
+            border: 2px solid #4CAF50;
+            padding: 10px;
+            margin: 10px;
+            min-height: 100px;
+            width: 120px;
+            display: inline-block;
+            vertical-align: top;
+        }
+        .stack-item {
+            background: #4CAF50;
+            color: black;
+            padding: 5px;
+            margin: 2px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        .stack-title {
+            color: #4CAF50;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .flow-box {
+            background: #2d2d2d;
+            border: 2px solid #4CAF50;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 150px;
+        }
+        .flow-arrow {
+            color: #4CAF50;
+            font-size: 24px;
+            margin: 0 10px;
+        }
+        
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #555;
+        }
+        
+        .code-example {
+            background: #1a1a1a;
+            border: 1px solid #555;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Fram.py - Forth RAM Dictionary Structure</h1>
+        
+        <div class="section">
+            <h2>RAM Array Structure (After loading basic words)</h2>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-box name-cell"></div>
+                    <span>Word Name</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box link-cell"></div>
+                    <span>Link Pointer</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box code-cell"></div>
+                    <span>Code Pointer</span>
+                </div>
+            </div>
+            
+            <div class="ram-array">
+                <div class="ram-cell name-cell">
+                    <div class="ram-index">0</div>
+                    "bye"
+                </div>
+                <div class="ram-cell link-cell">
+                    <div class="ram-index">1</div>
+                    -1
+                </div>
+                <div class="ram-cell code-cell">
+                    <div class="ram-index">2</div>
+                    xbye
+                </div>
+                <div class="ram-cell name-cell">
+                    <div class="ram-index">3</div>
+                    "'"
+                </div>
+                <div class="ram-cell link-cell">
+                    <div class="ram-index">4</div>
+                    0
+                </div>
+                <div class="ram-cell code-cell">
+                    <div class="ram-index">5</div>
+                    xtick
+                </div>
+                <div class="ram-cell name-cell">
+                    <div class="ram-index">6</div>
+                    "words"
+                </div>
+                <div class="ram-cell link-cell">
+                    <div class="ram-index">7</div>
+                    3
+                </div>
+                <div class="ram-cell code-cell">
+                    <div class="ram-index">8</div>
+                    xwords
+                </div>
+                <div class="ram-cell name-cell">
+                    <div class="ram-index">9</div>
+                    "+"
+                </div>
+                <div class="ram-cell link-cell">
+                    <div class="ram-index">10</div>
+                    6
+                </div>
+                <div class="ram-cell code-cell">
+                    <div class="ram-index">11</div>
+                    λ:add
+                </div>
+            </div>
+            
+            <p><strong>RAM_NEXT = 9</strong> (points to most recent word "+")</p>
+        </div>
+
+        <div class="section">
+            <h2>Dictionary Search Process</h2>
+            <div class="flow-diagram">
+                <div class="flow-box">
+                    <strong>Start Search</strong><br>
+                    x = RAM_NEXT (9)
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">
+                    <strong>Check Name</strong><br>
+                    RAM[x] == target?
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">
+                    <strong>If Match</strong><br>
+                    Return x + 2<br>
+                    (execution token)
+                </div>
+            </div>
+            <div style="text-align: center; margin: 10px;">
+                ↓ (if no match)
+            </div>
+            <div class="flow-diagram">
+                <div class="flow-box">
+                    <strong>Follow Link</strong><br>
+                    x = RAM[x + 1]
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-box">
+                    <strong>Continue</strong><br>
+                    Until x == -1<br>
+                    (end of chain)
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Example: Looking up "+"</h2>
+            <div class="code-example">
+<strong>Search path:</strong>
+1. Start at RAM_NEXT (9) → Check RAM[9] = "+" → MATCH!
+2. Return execution token: 9 + 2 = 11
+3. Execute: RAM[11]() calls the lambda function
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Stack Operations</h2>
+            <div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+                <div class="stack">
+                    <div class="stack-title">Data Stack (S)</div>
+                    <div class="stack-item">Top</div>
+                    <div class="stack-item">...</div>
+                    <div class="stack-item">Bottom</div>
+                </div>
+                <div class="stack">
+                    <div class="stack-title">Return Stack (R)</div>
+                    <div style="color: #888; font-style: italic;">Defined but<br>not used in<br>this version</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Key Functions</h2>
+            <div class="code-example">
+<strong>code(name, func)</strong> - Adds word to dictionary
+<strong>'</strong> (tick) - Finds word, returns execution token
+<strong>execute</strong> - Calls function at given execution token
+<strong>words</strong> - Lists all defined words by walking links
+<strong>interpret</strong> - Main dispatcher: lookup → execute or parse number
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Linked List Traversal</h2>
+            <p>Words are stored in reverse order of definition. Search starts from newest word (RAM_NEXT) and follows links backward:</p>
+            <div style="text-align: center; font-size: 18px; margin: 20px;">
+                <span style="color: #4CAF50;">"+" (9)</span> → 
+                <span style="color: #2196F3;">"words" (6)</span> → 
+                <span style="color: #FF9800;">"'" (3)</span> → 
+                <span style="color: #9C27B0;">"bye" (0)</span> → 
+                <span style="color: #F44336;">-1 (end)</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -2,6 +2,30 @@
 
 This is a collection of Forth (or Forth-like) implementations in various languages. It is intended to provide examples of how you can leverage Forth to simplify and add extensibility to your programs.
 
+## Python Implementations
+
+### simple.py
+The simplest thing that could be called a Forth (Mr. Moore will probably disagree with me). However, it provides a useful parser, stack and interface to the host system. Words in this implementation:
+
+* **bye** ( --) Exit interpreter.
+* **.** ( n --) Pop top of stack and print it.
+* **.s** ( --) Print contents of stack (nondestructive).
+* **+** ( a b -- sum) Add two numbers on top of stack.
+* **swap** ( a b -- b a) Swaps top two items on stack.
+* **-** ( a b -- difference) Subtracts top number from next on stack.
+* **word** ( c -- string) Collect characters in input stream up to character c.
+* **interpret** ( string --) Execute word on top of stack.
+
+### fram.py
+This implements a semi-traditional Forth dictionary in the RAM array. Words are stored with a name field, link field and code field. Instead of finding things directly with a Python dictionary, the `'` word searches for the xt, or "execution token", to be executed.
+
+In real terms, a little slower, but offers some exciting benefits, which I'll explore later.
+
+* **negate** ( n -- -n) Makes number negative (or positive, if you use it twice).
+* **execute** ( xt --) Executes the code at xt.
+* **words** ( --) Prints list of all words in dictionary.
+* **'** ( name -- xt) Finds word's xt in dictionary.
+
 ## References
 
 Some links to more information that will help in understanding why you might do with this and what to do with it once you've got it. If nothing else, please read Walker's essay at the first link.
