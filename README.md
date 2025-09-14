@@ -4,27 +4,38 @@ This is a collection of Forth (or Forth-like) implementations in various languag
 
 ## Python Implementations
 
-### simple.py
+### [simple.py](simple.py?rev=tip)
 The simplest thing that could be called a Forth (Mr. Moore will probably disagree with me). However, it provides a useful parser, stack and interface to the host system. Words in this implementation:
 
-* **bye** ( --) Exit interpreter.
+* **+** ( a b -- sum) Add two numbers on top of stack.
+* **-** ( a b -- difference) Subtracts top number from next on stack.
 * **.** ( n --) Pop top of stack and print it.
 * **.s** ( --) Print contents of stack (nondestructive).
-* **+** ( a b -- sum) Add two numbers on top of stack.
-* **swap** ( a b -- b a) Swaps top two items on stack.
-* **-** ( a b -- difference) Subtracts top number from next on stack.
-* **word** ( c -- string) Collect characters in input stream up to character c.
+* **bye** ( --) Exit interpreter.
 * **interpret** ( string --) Execute word on top of stack.
+* **swap** ( a b -- b a) Swaps top two items on stack.
+* **word** ( c -- string) Collect characters in input stream up to character c.
 
-### fram.py
+### [fram.py](fram.py?rev=tip)
 This implements a semi-traditional Forth dictionary in the RAM array. Words are stored with a name field, link field and code field. Instead of finding things directly with a Python dictionary, the `'` word searches for the xt, or "execution token", to be executed.
 
 In real terms, a little slower, but offers some exciting benefits, which I'll explore later.
 
-* **negate** ( n -- -n) Makes number negative (or positive, if you use it twice).
-* **execute** ( xt --) Executes the code at xt.
-* **words** ( --) Prints list of all words in dictionary.
 * **'** ( name -- xt) Finds word's xt in dictionary.
+* **execute** ( xt --) Executes the code at xt.
+* **negate** ( n -- -n) Makes number negative (or positive, if you use it twice).
+* **words** ( --) Prints list of all words in dictionary.
+
+### [fvars.py](fvars.py?rev=tip)
+Now we're getting into memory manipulations with variables and such. This introduces some new stuff in the code field -- a constant or variable is just like any other Forth word, except the code retrieves the values (or address of the values, for variables).
+
+* **!** ( v a --) Store value at address a.
+* **,** ( v --) Store v as next value in dictionary.
+* **@** ( a -- v) Fetch value from address a.
+* **constant** ( name | v --) Create constant with value v.
+* **create** ( name | --) Create word name in dictionary.
+* **dump** ( start n --) Dump n values starting from RAM address a.
+* **variable** ( name | v --) Create variable name, with initial value v.
 
 ## References
 

@@ -1,5 +1,5 @@
 APP = dict(
-    name="Simple Forth-like",
+    name="PT's copy of Simple Forth-like",
     about="Simple Forth-style parser and evaluator.",
     review=(("This is a beautifully minimal implementation of a Forth-like stack-based interpreter in Python!", "Claude Code"),))
 

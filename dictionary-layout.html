@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forth Dictionary Entry Byte Layout</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .title {
+            text-align: center;
+            color: #4CAF50;
+            font-size: 28px;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            background: #2d2d2d;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        .section h2 {
+            color: #4CAF50;
+            margin-top: 0;
+        }
+        .memory-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+            gap: 1px;
+            margin: 20px 0;
+            max-width: 800px;
+            background: #333;
+        }
+        .byte-cell {
+            background: #555;
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 10px;
+            min-height: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+        .byte-addr {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 8px;
+            color: #888;
+        }
+        .header-byte { background: #E91E63; color: white; font-weight: bold; }
+        .link-byte { background: #2196F3; color: white; }
+        .name-byte { background: #4CAF50; color: black; font-weight: bold; }
+        .code-byte { background: #FF9800; color: black; }
+        .param-byte { background: #9C27B0; color: white; }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .traditional, .fram-py {
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #555;
+        }
+        .traditional { border-color: #FF9800; }
+        .fram-py { border-color: #4CAF50; }
+        
+        .code-example {
+            background: #1a1a1a;
+            border: 1px solid #555;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .highlight { background: #333; padding: 2px 4px; border-radius: 3px; }
+        
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-box {
+            width: 15px;
+            height: 15px;
+            border: 1px solid #333;
+        }
+        
+        .arrow-down {
+            text-align: center;
+            color: #4CAF50;
+            font-size: 20px;
+            margin: 10px 0;
+        }
+        
+        .address-labels {
+            display: grid;
+            grid-template-columns: repeat(16, 1fr);
+            gap: 1px;
+            margin-bottom: 5px;
+            max-width: 800px;
+        }
+        .addr-label {
+            text-align: center;
+            font-size: 9px;
+            color: #888;
+            padding: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Forth Dictionary Entry Byte Layout</h1>
+        
+        <div class="section">
+            <h2>Traditional Forth Dictionary Entry Structure</h2>
+            <p>In classic Forth implementations, each dictionary entry (word definition) consists of several fields laid out sequentially in memory:</p>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-box header-byte"></div>
+                    <span>Header/Length</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box name-byte"></div>
+                    <span>Name String</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box link-byte"></div>
+                    <span>Link Field</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box code-byte"></div>
+                    <span>Code Field</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box param-byte"></div>
+                    <span>Parameter Field</span>
+                </div>
+            </div>
+            
+            <h3>Example: Word "DUP" in Traditional Forth</h3>
+            <div class="address-labels">
+                <div class="addr-label">0x1000</div><div class="addr-label">01</div><div class="addr-label">02</div><div class="addr-label">03</div>
+                <div class="addr-label">04</div><div class="addr-label">05</div><div class="addr-label">06</div><div class="addr-label">07</div>
+                <div class="addr-label">08</div><div class="addr-label">09</div><div class="addr-label">0A</div><div class="addr-label">0B</div>
+                <div class="addr-label">0C</div><div class="addr-label">0D</div><div class="addr-label">0E</div><div class="addr-label">0F</div>
+            </div>
+            <div class="memory-layout">
+                <div class="byte-cell header-byte">83</div>
+                <div class="byte-cell name-byte">D</div>
+                <div class="byte-cell name-byte">U</div>
+                <div class="byte-cell name-byte">P</div>
+                <div class="byte-cell link-byte">F8</div>
+                <div class="byte-cell link-byte">0F</div>
+                <div class="byte-cell link-byte">00</div>
+                <div class="byte-cell link-byte">00</div>
+                <div class="byte-cell code-byte">20</div>
+                <div class="byte-cell code-byte">10</div>
+                <div class="byte-cell code-byte">00</div>
+                <div class="byte-cell code-byte">00</div>
+                <div class="byte-cell param-byte">...</div>
+                <div class="byte-cell param-byte">...</div>
+                <div class="byte-cell param-byte">...</div>
+                <div class="byte-cell param-byte">...</div>
+            </div>
+            
+            <div class="code-example">
+<strong>Breakdown:</strong>
+• Byte 0x1000: 0x83 = Header (length=3, immediate flag set)
+• Bytes 0x1001-0x1003: "DUP" = Name string (3 characters)
+• Bytes 0x1004-0x1007: 0x00000FF8 = Link to previous word
+• Bytes 0x1008-0x100B: 0x00001020 = Code field pointer
+• Bytes 0x100C+: Parameter field (varies by word type)
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Header Byte Encoding</h2>
+            <p>The header byte contains packed information:</p>
+            <div class="memory-layout" style="max-width: 400px;">
+                <div class="byte-cell header-byte">7</div>
+                <div class="byte-cell header-byte">6</div>
+                <div class="byte-cell header-byte">5</div>
+                <div class="byte-cell header-byte">4</div>
+                <div class="byte-cell header-byte">3</div>
+                <div class="byte-cell header-byte">2</div>
+                <div class="byte-cell header-byte">1</div>
+                <div class="byte-cell header-byte">0</div>
+            </div>
+            
+            <div class="code-example">
+<strong>Bit Fields:</strong>
+• Bits 0-4 (0x1F): Name length (0-31 characters)
+• Bit 5 (0x20): Unused/available
+• Bit 6 (0x40): Hidden flag (word not findable)
+• Bit 7 (0x80): Immediate flag (execute during compilation)
+
+<strong>Example: 0x83 = 10000011 binary</strong>
+• Length = 3 (bits 0-4)
+• Immediate = 1 (bit 7 set)
+• So "DUP" is 3 characters and immediate
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Memory Alignment Considerations</h2>
+            <p>Most Forth systems align dictionary entries on cell boundaries (typically 4 or 8 bytes):</p>
+            
+            <h3>Example: Word "+" with padding</h3>
+            <div class="memory-layout" style="max-width: 500px;">
+                <div class="byte-cell header-byte">81</div>
+                <div class="byte-cell name-byte">+</div>
+                <div class="byte-cell name-byte">00</div>
+                <div class="byte-cell name-byte">00</div>
+                <div class="byte-cell link-byte">00</div>
+                <div class="byte-cell link-byte">10</div>
+                <div class="byte-cell link-byte">00</div>
+                <div class="byte-cell link-byte">00</div>
+                <div class="byte-cell code-byte">40</div>
+                <div class="byte-cell code-byte">10</div>
+                <div class="byte-cell code-byte">00</div>
+                <div class="byte-cell code-byte">00</div>
+            </div>
+            
+            <div class="code-example">
+<strong>Note:</strong> Name "+" (1 byte) is padded with nulls to align on 4-byte boundary.
+Header 0x81 = 10000001 = length=1, immediate=1
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Comparison: Traditional vs fram.py</h2>
+            <div class="comparison">
+                <div class="traditional">
+                    <h3>Traditional Forth (C/Assembly)</h3>
+                    <div class="code-example">
+typedef struct {
+    uint8_t  header;     // Length + flags
+    char     name[31];   // Variable length
+    uint32_t link;       // Previous word
+    uint32_t code;       // Code pointer
+    uint32_t param[];    // Parameters
+} forth_word_t;
+
+// Memory layout is linear:
+// [header][name...][pad][link][code][param...]
+                    </div>
+                </div>
+                
+                <div class="fram-py">
+                    <h3>fram.py (Python)</h3>
+                    <div class="code-example">
+# Python list-based approach:
+RAM = [
+    "name",     # String object
+    link_idx,   # Integer index
+    func_obj    # Python function
+]
+
+# Simplified: 3 Python objects per word
+# No byte-level packing needed
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Dictionary Search Process</h2>
+            <div class="code-example">
+<strong>Traditional byte-level search:</strong>
+1. Start at LATEST (points to newest word)
+2. Read header byte → extract name length
+3. Compare name string byte-by-byte
+4. If match: return address after name+padding
+5. If no match: follow link field to previous word
+6. Repeat until link = 0 (end of chain)
+
+<strong>fram.py simplified search:</strong>
+1. Start at RAM_NEXT index
+2. Compare RAM[x] string directly (Python string comparison)
+3. If match: return x + 2 (execution token)
+4. If no match: x = RAM[x + 1] (follow link)
+5. Repeat until x = -1
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Real Forth System Example (GForth)</h2>
+            <div class="code-example">
+<strong>Memory dump of "SWAP" word in GForth:</strong>
+
+Address   Bytes               Meaning
+--------  ----------------    ---------------------------
+0x804A1C0: 84 53 57 41 50 00 00 00   Header + "SWAP" + padding
+0x804A1C8: B0 A1 04 08             Link to previous word
+0x804A1CC: E0 9F 04 08             Code field pointer
+0x804A1D0: ...                     Parameter field
+
+<strong>Breakdown:</strong>
+• 0x84 = 10000100b = length=4, immediate=1
+• "SWAP" = name string (4 bytes)
+• 3 padding bytes for alignment
+• Link = 0x0804A1B0 (little-endian)
+• Code = 0x08049FE0 (points to native code)
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Key Differences Summary</h2>
+            <div class="code-example">
+<strong>Traditional Forth:</strong>
+• Byte-packed, memory-efficient
+• Fixed header format with flags
+• Manual memory management
+• Alignment considerations
+• Direct machine code execution
+
+<strong>fram.py Approach:</strong>
+• Python object references
+• Simplified 3-field structure
+• Automatic memory management
+• No alignment needed
+• Function object execution
+
+Both implement the same logical structure:
+[name] → [link] → [code] but at different abstraction levels.
+            </div>
+        </div>
+    </div>
+</body>
+</html>
