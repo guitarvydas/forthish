@@ -1,18 +1,14 @@
-# Install mercurial
-## bash
-`$ sudo apt install mercurial`
-## macOS (with homebrew)
-`$ brew install mercurial`
+# Install from github
 # Clone Forthish
 `$ mkdir forthish`
 `$ cd forthish`
-`$ hg clone https://hg.sr.ht/~oofoe/forthish`
+`$ git clone https://github.com/guitarvydas/forthish.git
 
 # Proceed
-begin by looking at `simple.py` and trying it out
-`python3 simple.py`
+begin by looking at `simple.py` and trying it out (you might need to specify `python3` instead of `python`
 ```
-$ python3 simple.py 
+$ cd basic/simple
+$ python simple.py 
 OK 1
 OK .s
 [1]
@@ -25,3 +21,13 @@ OK .s
 OK
 ```
 Read README.md.
+
+# Future Pulls
+After installing, you can pull that latest versions with
+`git pull`
+
+# Documentation and Walkthroughs and Challenges
+look at `forthish/course/basic/Week 1/Week 1 README.md`
+look at `forthish/course/basic/Week 1/Description of simple.py.md`
+look at `forthish/course/basic/Week 1/Week 1 Challenges.md`
+

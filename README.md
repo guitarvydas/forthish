@@ -37,6 +37,9 @@ Now we're getting into memory manipulations with variables and such. This introd
 * **dump** ( start n --) Dump n values starting from RAM address a.
 * **variable** ( name | v --) Create variable name, with initial value v.
 
+### [fcomp.py](fcomp.py?rev=tip)
+Coming soon...
+
 ## References
 
 Some links to more information that will help in understanding why you might do with this and what to do with it once you've got it. If nothing else, please read Walker's essay at the first link.
@@ -49,6 +52,7 @@ Some links to more information that will help in understanding why you might do 
 
 ### Supplemental
 
+* [Forth Standard](https://forth-standard.org/standard/words) Yes, Forth has a language standard. Don't feel like you need to follow it slavishly, though...
 * [JONESFORTH](https://github.com/nornagon/jonesforth/blob/master/jonesforth.S) -- A full implementation of Forth, in assembly.
 * [Thinking Forth -- A Language and Philosophy for Solving Problems](https://www.forth.com/wp-content/uploads/2018/11/thinking-forth-color.pdf) -- Leo Brodie's masterwork, read this to figure out how to _really_ use your new Forth implementation.
 
