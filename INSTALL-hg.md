@@ -1,4 +1,8 @@
 # Install mercurial
+use these commands to pull Jos'h's code directly from hg.sr.ht
+
+Otherwise, see INSTALL.md
+
 ## bash
 `$ sudo apt install mercurial`
 ## macOS (with homebrew)
