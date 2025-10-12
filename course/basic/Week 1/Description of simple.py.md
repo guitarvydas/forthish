@@ -41,26 +41,24 @@ S = [];
 
 In this simple Python version, we use a list as the stack. The "top" of the stack is the last element of the list. This is Python convention.
 
-In practice, when using just a basic CPU, we would treat memory as an array of bytes. In this case, we are free to whatever convention we wish. For example we might allocate an array of 4 kilobytes (4,096 bytes) with indices of 4,096-8,191 (indices into the memory array are called "pointers"), and, we might imagine that the bottom of the stack is at 8,192 and grows "upwards" towards 4,096. 
+In practice, when using just a basic CPU, we would treat memory as an array of bytes. In this case, we are free to use whatever convention we wish. For example we might allocate an array of 4 kilobytes (4,096 bytes) with indices of 4,096-8,191 (indices into the memory array are called "pointers"), and, we might imagine that the bottom of the stack is at 8,192 and grows "upwards" towards 4,096. 
 
-On a 16-bit CPU, we need to use 16 bit integers as indices (pointers). Hence, an index is 2 bytes (bytes are 8 bits each, 16 = 8 + 8). It is convenient to make *everything* on the stack be 16 bits, by convention. Hence, an element on the stack can be interpreted as a 16-bit index (pointer), or a 16-bit integer (0-65,535), or a 15-bit signed integer (-65535 → 0 → 65535), or a 16-bit index into the string pool
+On a 16-bit CPU, we need to use 16 bit integers as indices (pointers). Hence, an index is 2 bytes (bytes are 8 bits each, 16 = 8 + 8). It is convenient to make *everything* on the stack be 16 bits, by convention. Hence, an element on the stack can be interpreted as a 16-bit index (pointer), or a 16-bit integer (0-65,535), or a 15-bit signed integer (-65535 → 0 → 65535), or a 16-bit index into a string pool.
 
 ### Input Buffer
 ```python
 BUFF = "";
 ```
-
 Declaration of the `BUFF` input string buffer. Initialized to be the empty string.
 
 ```python
 BUFP = 0
 ```
-
 Index of the next unread character in `BUFF`.
 
 Initialized to 0.
 
-`P` is used because historically indices into RAM are called *pointers*.
+`P` is used as a suffix because,  historically, indices into RAM are called *pointers*.
 
 `BUFF` and `BUFP` are manipulated by the `xword` subroutine. When the buffer is empty or if BUFP points past the end of `BUFF`, more input is read in from the user at the command line and `BUFP` is reset to 0. The input is stored in `BUFF`.
 
@@ -191,7 +189,17 @@ def ok():
 ```
 The main REPL for Forthish.
 
-It loops reading input from the user, then interpreting the input.
+It loops reading input from the user, then looping again to interpret the input. Roughly:
+
+```
+loop
+    get a line of input from user → BUFF
+    loop
+        parse one more word from BUFF
+        interpret word
+    end loop
+end loop
+```
 
 Each line of input is parsed into its constituent words and those words are sequentially interpreted.
 
