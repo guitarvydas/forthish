@@ -67,6 +67,15 @@ In Python, a *docstring* can be supplied as the first item in a function body (a
 
 In Forth, it is a convention to show the before and after contents of the stack inside parentheses, separated by `--`.
 
+The stack picture notation shows arguments in the order they're added to the stack -- so (assuming stack that grows rightwards (TOS is Top of Stack)):
+
+```
+OK 3
+( 3 TOS) OK 4
+( 3 4 TOS) OK +
+( 7 TOS)
+```
+
 ```python
 def xbye():  "( --) Leave interpreter."; raise SystemExit
 ```
@@ -99,12 +108,12 @@ Swap the top two items on the stack. The second item down is moved to the top of
 
 Semantically, this operates as
 ```
-A ← top of stack, pop
-B ← top of stack, pop (B used to be the 2nd item, but because of the preceding pop, B has become the top)
-push (A) onto the stack
-push (B) on the stack
+B ← top of stack, pop
+A ← top of stack, pop (A used to be the 2nd item, but because of the preceding pop, A has become the top)
+push (B) onto the stack
+push (A) on the stack
 ```
-B is now the top of the stack and A is second.
+A is now the top of the stack and B is second.
 
 In Python, this can be done more efficiently by indexing into the stack.
 
@@ -115,7 +124,7 @@ A temporary, local variable `x` is used to save the top item. The top slot is ov
 ```python
 def xsub():  "(a b -- diff)"; xswap(); S.append(S.pop() - S.pop())
 ```
-Consume the top two items on the stack. Assume that they are integers. Subtract them (top - second) and push the result onto the stack.
+Consume the top two items on the stack. Assume that they are integers. Subtract them (top - second, b - a) and push the result onto the stack.
 
 ```python
 def xword():
