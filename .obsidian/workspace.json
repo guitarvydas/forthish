@@ -20,8 +20,23 @@
               "icon": "lucide-file",
               "title": "Week 1 Challenges"
             }
+          },
+          {
+            "id": "400d5a4f3fb17c6c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "course/basic/Week 1/Script.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Script"
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -169,8 +184,25 @@
       "bases:Create new base": false
     }
   },
-  "active": "50867f29da2de885",
+  "active": "400d5a4f3fb17c6c",
   "lastOpenFiles": [
+    "course/basic/Week 1/assets/forthin.png",
+    "course/basic/Week 1/assets/pdf1.png",
+    "course/basic/Week 1/assets/Screenshot 2025-10-19 at 4.46.30 PM.png",
+    "course/basic/Week 1/assets/screenshot-simple-py.png",
+    "course/basic/Week 1/assets/Screenshot 2025-10-19 at 4.12.40 PM.png",
+    "course/basic/Week 1/assets/repositories.png",
+    "course/basic/Week 1/assets/Screenshot 2025-10-19 at 4.08.23 PM.png",
+    "course/basic/Week 1/#repositories.md#",
+    "course/basic/Week 1/assets/Screenshot 2025-10-19 at 3.46.14 PM.png",
+    "course/basic/Week 1/repositories.md~",
+    "course/basic/Week 1/repositories.md",
+    "course/basic/Week 1/repos.md~",
+    "course/basic/Week 1/#repos.md#",
+    "course/basic/Week 1/repos.md",
+    "course/basic/Week 1/Script.md~",
+    "course/basic/Week 1/Script.md",
+    "course/basic/Week 1/Week 1 Challenges.md",
     "course/basic/Week 1/Week 1 Challenges.pdf",
     "course/basic/Week 1/Description of simple.py.md",
     "course/basic/Week 1/Description of simple.py.pdf",
@@ -179,40 +211,26 @@
     "simple/simple.drawio",
     "simple/simple.py",
     "simple/README.md",
-    "simple/Makefile",
-    "simple",
     "INSTALL.md",
-    "Makefile",
     "course/Basics/Week 1/assets/simple.drawio.png",
     "course/Basics/Week 1/assets/Summary of Evolving Outline.md",
     "course/Basics/Week 1/assets/outline.md",
     "course/Basics/Week 1/Week 1 README.md",
-    "course/Basics/Week 1/assets",
     "course/Basics/Week 1/Week 1 Challenges.md",
     "course/Basics/Week 1/Description of simple.py.md",
-    "course/Basics/Week 1",
     "course/ASON/ASON.ohm.md",
     "course/ASON/ASON Spec.md",
-    "course/ASON",
     "basic/README.md",
     "assets/forthin.png",
     "py-test.md",
     "parser-server.md",
     "fram.svg",
-    "forthin.png",
     "FRAM.py Diagram.md",
     "Doc 2 (supplemental).md",
     "DOC Dictionary Layout in Early Forth.md",
     "DOC 3 (supplemental).md",
     "DOC (simple.py).md",
     "DOC (fram.py).md",
-    "attic/FRAM.py Diagram.md",
-    "attic/altscript-objects.md",
-    "logo/forthin.png",
-    "attic/prompt.md",
-    "attic/py-test.md",
-    "attic/Doc 2 (supplemental).md",
-    "attic/fram.svg",
-    "forthish/fram.svg"
+    "attic/FRAM.py Diagram.md"
   ]
 }
