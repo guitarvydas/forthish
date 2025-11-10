@@ -40,6 +40,9 @@ Now we're getting into memory manipulations with variables and such. This introd
 ### [fcomp.py]()
 Coming soon...
 
+## Weird, Alien Implementations
+[Frish documentation - simple.py writtten in a portable-meta-language](frish/README.md)
+
 ## References
 
 Some links to more information that will help in understanding why you might do with this and what to do with it once you've got it. If nothing else, please read Walker's essay at the first link.

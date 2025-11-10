@@ -1,0 +1,74 @@
+defsubr xbye { ⌈ ( --) Leave interpreter ⌉ %quit }⎩1⎭
+defsubr xdot { ⌈ ( n --) Print TOS ⌉ %print (%pop) %printnl }⎩2⎭
+defsubr xdots { ⌈ ( --) Print stack contents ⌉ %print (%stack) %printnl }⎩3⎭
+defsubr xadd {⎩4⎭
+    ⌈ ( a b -- sum) ⌉⎩5⎭
+    deftemp A ⇐ %pop⎩6⎭
+    deftemp B ⇐ %pop⎩7⎭
+    %push (A + B)⎩8⎭
+}⎩9⎭
+defsubr xsub {⎩10⎭
+    ⌈ ( a b -- diff) ⌉⎩11⎭
+    deftemp A ⇐ %pop⎩12⎭
+    deftemp B ⇐ %pop⎩13⎭
+    %push (A - B)⎩14⎭
+}⎩15⎭
+defsubr xswap {⎩16⎭
+    ⌈ ( a b -- b a) ⌉⎩17⎭
+    deftemp A ⇐ %pop⎩18⎭
+    deftemp B ⇐ %pop⎩19⎭
+    %push (A)⎩20⎭
+    %push (B)⎩21⎭
+}⎩22⎭
+⎩23⎭
+defsubr xword {⎩24⎭
+    ⌈ (char -- string) Read in string delimited by char ⌉⎩25⎭
+    deftemp wanted ⇐ %popchar⎩26⎭
+    %scanfor (wanted)⎩27⎭
+}⎩28⎭
+⎩29⎭
+defsubr xinterpret {⎩30⎭
+    ⌈ ( string --) Execute word ⌉⎩31⎭
+    deftemp word ⇐ %pop⎩32⎭
+    if %empty-string? (word) {⎩33⎭
+        pass⎩34⎭
+    } else {⎩35⎭
+	deftemps found, subr ⇐ %lookup (subrs, word)⎩36⎭
+	if found {⎩37⎭
+	    @subr⎩38⎭
+	} elif %digits? (word) {⎩39⎭
+	    deftemp i ⇐ %toint (word)⎩40⎭
+	    %push (i)⎩41⎭
+	} else {⎩42⎭
+	    %print (word)⎩43⎭
+	    %print ("?")⎩44⎭
+	    %printnl⎩45⎭
+	}⎩46⎭
+    }⎩47⎭
+}⎩48⎭
+⎩49⎭
+defvar subrs ⇐ %freshdict⎩50⎭
+%assoc (subrs, "bye", ↪︎xbye)⎩51⎭
+%assoc (subrs, ".", ↪︎xdot)⎩52⎭
+%assoc (subrs, ".s", ↪︎xdots)⎩53⎭
+%assoc (subrs, "+", ↪︎xadd)⎩54⎭
+%assoc (subrs, "-", ↪︎xsub)⎩55⎭
+%assoc (subrs, "swap", ↪︎xswap)⎩56⎭
+%assoc (subrs, "word", ↪︎xword)⎩57⎭
+%assoc (subrs, "interpret", ↪︎xinterpret)⎩58⎭
+⎩59⎭
+defsubr ok {⎩60⎭
+    ⌈ ( --) Interaction loop -- REPL ⌉⎩61⎭
+    defsynonym blank ≡ 32⎩62⎭
+    while ⊤ {⎩63⎭
+	%input⎩64⎭
+	while not %empty-input {⎩65⎭
+	    %push (blank)⎩66⎭
+	    @xword⎩67⎭
+	    @xinterpret⎩68⎭
+	}⎩69⎭
+    }⎩70⎭
+}⎩71⎭
+⎩72⎭
+%exec ok⎩73⎭
+    ⎩74⎭
