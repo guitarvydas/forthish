@@ -1,8 +1,7 @@
 # Install from github
 # Clone Forthish
-`$ mkdir forthish`
-`$ cd forthish`
 `$ git clone https://github.com/guitarvydas/forthish.git
+`$ cd forthish`
 
 # Proceed
 begin by looking at `simple.py` and trying it out (you might need to specify `python3` instead of `python`

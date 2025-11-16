@@ -8,9 +8,8 @@ Otherwise, see INSTALL.md
 ## macOS (with homebrew)
 `$ brew install mercurial`
 # Clone Forthish
-`$ mkdir forthish`
-`$ cd forthish`
 `$ hg clone https://hg.sr.ht/~oofoe/forthish`
+`$ cd forthish`
 
 # Proceed
 begin by looking at `simple.py` and trying it out
