@@ -10,21 +10,25 @@ def Lookup (dict, key):
     return v is not None, v
 
 def xbye ():
+    global Stack, BUFF, BUFP
     # ( --) Leave interpreter
 
     raise SystemExit                                   #line 1
 
 def xdot ():
+    global Stack, BUFF, BUFP
     # ( n --) Print TOS
     print (Stack.pop (), end="")
     print ()                                           #line 2
 
 def xdots ():
+    global Stack, BUFF, BUFP
     # ( --) Print stack contents
     print (Stack, end="")
     print ()                                           #line 3
 
-def xadd ():                                           #line 4
+def xadd ():
+    global Stack, BUFF, BUFP                           #line 4
     # ( a b -- sum)                                    #line 5
 
     B = Stack.pop ()                                   #line 6
@@ -32,7 +36,8 @@ def xadd ():                                           #line 4
     A = Stack.pop ()                                   #line 7
     Stack.append ( A+ B)                               #line 8#line 9
 
-def xsub ():                                           #line 10
+def xsub ():
+    global Stack, BUFF, BUFP                           #line 10
     # ( a b -- diff)                                   #line 11
 
     B = Stack.pop ()                                   #line 12
@@ -40,7 +45,8 @@ def xsub ():                                           #line 10
     A = Stack.pop ()                                   #line 13
     Stack.append ( A- B)                               #line 14#line 15
 
-def xswap ():                                          #line 16
+def xswap ():
+    global Stack, BUFF, BUFP                           #line 16
     # ( a b -- b a)                                    #line 17
 
     B = Stack.pop ()                                   #line 18
@@ -49,12 +55,12 @@ def xswap ():                                          #line 16
     Stack.append ( B)                                  #line 20
     Stack.append ( A)                                  #line 21#line 22#line 23
 
-def xword ():                                          #line 24
+def xword ():
+    global Stack, BUFF, BUFP                           #line 24
     # (char -- string) Read in string delimited by char #line 25
 
     wanted = chr(Stack.pop ())                         #line 26
 
-    global BUFF, BUFP
     found = ""
     while BUFP < len(BUFF):
         x = BUFF[BUFP]
@@ -66,7 +72,8 @@ def xword ():                                          #line 24
     Stack.append(found)
                                                        #line 27#line 28#line 29
 
-def xinterpret ():                                     #line 30
+def xinterpret ():
+    global Stack, BUFF, BUFP                           #line 30
     # ( string --) Execute word                        #line 31
 
     word = Stack.pop ()
@@ -92,13 +99,13 @@ subrs = {                                              #line 50
     "word" : xword,
     "interpret" : xinterpret,
 }
-def ok ():                                             #line 60
+def ok ():
+    global Stack, BUFF, BUFP                           #line 60
     # ( --) Interaction loop -- REPL                   #line 61
 
     blank =  32                                        #line 62
     while  True:                                       #line 63
 
-        global BUFF, BUFP
         BUFF = input("OK ")
         BUFP = 0
                                                        #line 64

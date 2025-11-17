@@ -22,7 +22,7 @@ TopLevel_comment [s line?] =‛\n«s»«line»’
 TopLevel_line [line] =‛«line»’
 
 Defvar [ __ lval _eq e line?] = ‛\n«lval» = «e»«line»’
-Defsubr [ _4 ident StatementBlock line?] = ‛\ndef «ident» ():«StatementBlock»«line»\n’
+Defsubr [ _4 ident StatementBlock line?] = ‛\ndef «ident» ():⤷\nglobal Stack, BUFF, BUFP⤶«StatementBlock»«line»\n’
 Defobj [ _defobj ident Formals line1? lb line2? init+ rb line3?] = ‛\nclass «ident»:⤷\ndef __init__ (self,«Formals»):«line1»⤷«line2»«init»«line3»⤶⤶\n’
 StatementBlock [ line1? lb line2? Statement     line3? rb  line4?] = ‛«line1»«line2»⤷«Statement»«line3»«line4»⤶’
 
@@ -47,7 +47,6 @@ BuiltinPhrase_pop [_] = ‛Stack.pop ()’
 BuiltinPhrase_popchar [_] = ‛chr(Stack.pop ())’
 BuiltinPhrase_push [_ lp exp rp] = ‛Stack.append («exp»)’
 BuiltinPhrase_scanfor [_ lp want rp] = ‛
-    global BUFF, BUFP
     found = ""
     while BUFP < len(BUFF):⤷
         x = BUFF[BUFP]
@@ -71,7 +70,6 @@ BuiltinPhrase_exec [_ f] = ‛«f»()’
 BuiltinPhrase_isdigits [_ lp exp rp] = ‛«exp».isdigit()’
 BuiltinPhrase_toint [_ lp exp rp] = ‛int («exp»)’
 BuiltinPhrase_input [_] = ‛
-global BUFF, BUFP
 BUFF = input("OK ")
 BUFP = 0
 ’
