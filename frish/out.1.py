@@ -27,24 +27,27 @@ def xdots ():
 def xadd ():                                           #line 4
     # ( a b -- sum)                                    #line 5
 
-    A = Stack.pop ()                                   #line 6
+    B = Stack.pop ()                                   #line 6
 
-    B = Stack.pop ()                                   #line 7
+    A = Stack.pop ()                                   #line 7
     Stack.append ( A+ B)                               #line 8#line 9
 
 def xsub ():                                           #line 10
     # ( a b -- diff)                                   #line 11
 
-    A = Stack.pop ()                                   #line 12
+    B = Stack.pop ()                                   #line 12
 
-    B = Stack.pop ()                                   #line 13
+    A = Stack.pop ()                                   #line 13
     Stack.append ( A- B)                               #line 14#line 15
 
 def xswap ():                                          #line 16
     # ( a b -- b a)                                    #line 17
-    x = Stack [-1]
-    Stack [-1] = Stack [-2]
-    Stack [-2] = x                                     #line 18#line 22#line 23
+
+    B = Stack.pop ()                                   #line 18
+
+    A = Stack.pop ()                                   #line 19
+    Stack.append ( B)                                  #line 20
+    Stack.append ( A)                                  #line 21#line 22#line 23
 
 def xword ():                                          #line 24
     # (char -- string) Read in string delimited by char #line 25
@@ -73,7 +76,7 @@ def xinterpret ():                                     #line 30
         if  found:                                     #line 37
             subr()                                     #line 38
         elif  word.isdigit():
-            Stack.append (int ( i))
+            Stack.append (int ( word))
         else:                                          #line 42
             print ( word, end="")                      #line 43
             print ( "?", end="")                       #line 44
