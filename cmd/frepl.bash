@@ -5,7 +5,7 @@ while true; do
     # Exit on specific command (optional)
     [[ "$line" == "exit" || "$line" == "quit" ]] && break
     echo "$line" >> log
-    echo "$line" | python3 fcomp.py
+    echo "$line" | python3 fcomp.py $1
 done
 
 echo "Goodbye!"

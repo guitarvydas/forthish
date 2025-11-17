@@ -1,2 +1,2 @@
 all:
-	./frepl.bash
+	./frepl.bash state.json

@@ -29,17 +29,6 @@ class State:
         self.BUFF = ""
         self.BUFP = 0
 
-def initialize ():
-    global S, R, RAM, LAST, IP, BUFF, BUFP
-    St = State ()
-    S = St.S
-    R = St.R
-    RAM = St.RAM
-    LAST = St.LAST
-    IP = St.IP
-    BUFF = ""
-    BUFP = 0
-
 
 def code(name, does, flags=0):
     "( name does /flags/ --) Add new word to RAM dictionary."
@@ -317,11 +306,23 @@ def initialize_code():
     code(";", xsemi, 1)
     code("interpret", xinterpret)
 
+def initialize_globals ():
+    global S, R, RAM, LAST, IP, BUFF, BUFP
+    St = State ()
+    S = St.S
+    R = St.R
+    RAM = St.RAM
+    LAST = St.LAST
+    IP = St.IP
+    BUFF = ""
+    BUFP = 0
+
 import sys
+import json
 
 def main():
     global BUFF, BUFP
-    initialize ()
+    initialize_globals ()
     initialize_code ()
     # Read lines from stdin
     for line in sys.stdin:
