@@ -29,23 +29,18 @@ defsubr xword {⎩24⎭
 ⎩29⎭
 defsubr xinterpret {⎩30⎭
     ⌈ ( string --) Execute word ⌉⎩31⎭
-    deftemp word ⇐ %pop⎩32⎭
-    if %empty-string? (word) {⎩33⎭
-        pass⎩34⎭
-    } else {⎩35⎭
+    deftemp word ⇐ %pop
+if (not  %empty-string? (word) ) { ⎩35⎭
 	deftemps found, subr ⇐ %lookup (subrs, word)⎩36⎭
 	if found {⎩37⎭
 	    @subr⎩38⎭
-	} elif %digits? (word) {⎩39⎭
-	    deftemp i ⇐ %toint (word)⎩40⎭
-	    %push (i)⎩41⎭
-	} else {⎩42⎭
+	} elif %digits? (word) {
+%push (%toint (i))} else {⎩42⎭
 	    %print (word)⎩43⎭
 	    %print ("?")⎩44⎭
 	    %printnl⎩45⎭
 	}⎩46⎭
-    }⎩47⎭
-}⎩48⎭
+     }}⎩48⎭
 ⎩49⎭
 defvar subrs ⇐ %freshdict⎩50⎭
 %assoc (subrs, "bye", ↪︎xbye)⎩51⎭

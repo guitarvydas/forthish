@@ -70,28 +70,27 @@ def xinterpret ():                                     #line 30
     # ( string --) Execute word                        #line 31
 
     word = Stack.pop ()
-    if(  word):                                        #line 35
+    if (not (not  word)):                              #line 35
 
         found, subr = Lookup (subrs,  word)            #line 36
         if  found:                                     #line 37
             subr()                                     #line 38
         elif  word.isdigit():
-            Stack.append (int ( word))
+            Stack.append (int ( i))
         else:                                          #line 42
             print ( word, end="")                      #line 43
             print ( "?", end="")                       #line 44
             print ()                                   #line 45#line 46#line 48#line 49
-subrs = {                                              #line 50
 
-    "bye" : xbye,
-    "." : xdot,
-    ".s" : xdots,
-    "+" : xadd,
-    "-" : xsub,
-    "swap" : xswap,
-    "word" : xword,
-    "interpret" : xinterpret,
-}
+subrs = {}                                             #line 50
+subrs ["bye"] =  xbye                                  #line 51
+subrs ["."] =  xdot                                    #line 52
+subrs [".s"] =  xdots                                  #line 53
+subrs ["+"] =  xadd                                    #line 54
+subrs ["-"] =  xsub                                    #line 55
+subrs ["swap"] =  xswap                                #line 56
+subrs ["word"] =  xword                                #line 57
+subrs ["interpret"] =  xinterpret                      #line 58#line 59
 def ok ():                                             #line 60
     # ( --) Interaction loop -- REPL                   #line 61
 

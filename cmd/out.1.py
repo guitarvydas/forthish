@@ -76,7 +76,7 @@ def xinterpret ():                                     #line 30
         if  found:                                     #line 37
             subr()                                     #line 38
         elif  word.isdigit():
-            Stack.append (int ( word))
+            Stack.append (int ( i))
         else:                                          #line 42
             print ( word, end="")                      #line 43
             print ( "?", end="")                       #line 44
