@@ -31,7 +31,7 @@ code("negate", lambda : S.append(-S.pop()))  # ( n -- -n)
 code("emit", lambda : print(chr(int(S.pop())), end=""))  # ( n --) Emit specified character.
 code("cr", lambda : print(""))  # ( --) Print carriage return.
 code(".", lambda : print(f"{S.pop()} ", end=""))  # ( n --) Print TOS.
-code(".s", lambda : print(f"{' '.join([repr(x) for x in S])} <-Top", end=""))  # ( --) Print stack contents.
+code(".s", lambda : print(S))
 code("+", lambda : S.append(S.pop() + S.pop()))  # ( a b -- sum)
 code("*", lambda : S.append(S.pop() * S.pop()))  # ( a b -- product)
     
@@ -254,14 +254,9 @@ def xsemi():
     fvset("state", 0)
 code(";", xsemi, 1)
 
-def debug_input ():
-    global BUFF, BUFP
-    print(f'BUFF: {BUFF[BUFP:]}')
-
 def xinterpret():
     "( string --) Execute word."
     global IP, W
-    debug_input ()
     state = fvget("state")  # Interpreting or compiling?
     xfind()
     flag = S.pop()
