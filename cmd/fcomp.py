@@ -51,7 +51,6 @@ def code(name, does, flags=0):
     RAM.append(does)   # Code pointer.
     LAST = x
 
-initialize ()
 
     
 def xswap(): "( a b -- b a)"; x = S[-1]; S[-1] = S[-2]; S[-2] = x
@@ -81,9 +80,9 @@ def xquote():
     "( -- string) Read up to closing quote, push to stack."
     S.push(34); xword()
     if 1 == fvget("state"): literalize()
-code('"', xquote, 1)
+
 def xdotquote(): "( --) Print string."; xquote(); print(S.pop(), end="")
-code('."', xdotquote)
+
 def xcomment(): "( --) Read up to close paren."; S.push(41); xword(); S.pop()
 
 def doliteral():  # Inside definitions only, pushes compiled literal to stack.
@@ -135,7 +134,6 @@ def xconst():
     S.push(32); xword()
     const(S.pop(), S.pop())
 
-const("pi", 3.14159)
 
 def create(name):
     "( name --) Add name to dictionary."
@@ -279,6 +277,7 @@ def xinterpret():
 
 def initialize_code():
     var("state", 0)  # 0 = interpret, 1 = compile
+    const("pi", 3.14159)
     code("drop", lambda : S.pop())  # ( a --) Drop TOS.
     code("dup", lambda : S.push(S[-1]))  # ( a -- a a) Duplicate TOS.
     code("negate", lambda : S.append(-S.pop()))  # ( n -- -n)
@@ -322,6 +321,7 @@ import sys
 
 def main():
     global BUFF, BUFP
+    initialize ()
     initialize_code ()
     # Read lines from stdin
     for line in sys.stdin:
