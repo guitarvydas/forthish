@@ -1,4 +1,9 @@
-Stack = []; BUFF = ""; BUFP = 0
+class StateClass:
+    def __init__ (self):
+        self.Stack = []
+        self.BUFF = ""
+        self.BUFP = 0
+State = StateClass ()
 def Lookup (dict, key):
     if key == '':
         return None, None
@@ -10,80 +15,80 @@ def Lookup (dict, key):
     return v is not None, v
 
 def xbye ():
-    global Stack, BUFF, BUFP
+    global State
     # ( --) Leave interpreter
 
     raise SystemExit                                   #line 1
 
 def xdot ():
-    global Stack, BUFF, BUFP
+    global State
     # ( n --) Print TOS
-    print (Stack.pop (), end="")
+    print (State.Stack.pop (), end="")
     print ()                                           #line 2
 
 def xdots ():
-    global Stack, BUFF, BUFP
+    global State
     # ( --) Print stack contents
-    print (Stack, end="")
+    print (State.Stack, end="")
     print ()                                           #line 3
 
 def xadd ():
-    global Stack, BUFF, BUFP                           #line 4
+    global State                                       #line 4
     # ( a b -- sum)                                    #line 5
 
-    B = Stack.pop ()                                   #line 6
+    B = State.Stack.pop ()                             #line 6
 
-    A = Stack.pop ()                                   #line 7
-    Stack.append ( A+ B)                               #line 8#line 9
+    A = State.Stack.pop ()                             #line 7
+    State.Stack.append ( A+ B)                         #line 8#line 9
 
 def xsub ():
-    global Stack, BUFF, BUFP                           #line 10
+    global State                                       #line 10
     # ( a b -- diff)                                   #line 11
 
-    B = Stack.pop ()                                   #line 12
+    B = State.Stack.pop ()                             #line 12
 
-    A = Stack.pop ()                                   #line 13
-    Stack.append ( A- B)                               #line 14#line 15
+    A = State.Stack.pop ()                             #line 13
+    State.Stack.append ( A- B)                         #line 14#line 15
 
 def xswap ():
-    global Stack, BUFF, BUFP                           #line 16
+    global State                                       #line 16
     # ( a b -- b a)                                    #line 17
 
-    B = Stack.pop ()                                   #line 18
+    B = State.Stack.pop ()                             #line 18
 
-    A = Stack.pop ()                                   #line 19
-    Stack.append ( B)                                  #line 20
-    Stack.append ( A)                                  #line 21#line 22#line 23
+    A = State.Stack.pop ()                             #line 19
+    State.Stack.append ( B)                            #line 20
+    State.Stack.append ( A)                            #line 21#line 22#line 23
 
 def xword ():
-    global Stack, BUFF, BUFP                           #line 24
+    global State                                       #line 24
     # (char -- string) Read in string delimited by char #line 25
 
-    wanted = chr(Stack.pop ())                         #line 26
+    wanted = chr(State.Stack.pop ())                   #line 26
 
     found = ""
-    while BUFP < len(BUFF):
-        x = BUFF[BUFP]
-        BUFP += 1
+    while State.BUFP < len(State.BUFF):
+        x = State.BUFF[State.BUFP]
+        State.BUFP += 1
         if wanted == x:
             break
         else:
             found += x
-    Stack.append(found)
+    State.Stack.append(found)
                                                        #line 27#line 28#line 29
 
 def xinterpret ():
-    global Stack, BUFF, BUFP                           #line 30
+    global State                                       #line 30
     # ( string --) Execute word                        #line 31
 
-    word = Stack.pop ()
+    word = State.Stack.pop ()
     if (not (not  word)):                              #line 35
 
         found, subr = Lookup (subrs,  word)            #line 36
         if  found:                                     #line 37
             subr()                                     #line 38
         elif  word.isdigit():
-            Stack.append (int ( word))
+            State.Stack.append (int ( word))
         else:                                          #line 42
             print ( word, end="")                      #line 43
             print ( "?", end="")                       #line 44
@@ -99,17 +104,17 @@ subrs ["swap"] =  xswap                                #line 56
 subrs ["word"] =  xword                                #line 57
 subrs ["interpret"] =  xinterpret                      #line 58#line 59
 def ok ():
-    global Stack, BUFF, BUFP                           #line 60
+    global State                                       #line 60
     # ( --) Interaction loop -- REPL                   #line 61
 
     blank =  32                                        #line 62
     while  True:                                       #line 63
 
-        BUFF = input("OK ")
-        BUFP = 0
+        State.BUFF = input("OK ")
+        State.BUFP = 0
                                                        #line 64
-        while not (BUFP >= len(BUFF)):                 #line 65
-            Stack.append ( blank)                      #line 66
+        while not (State.BUFP >= len(State.BUFF)):     #line 65
+            State.Stack.append ( blank)                #line 66
             xword()                                    #line 67
             xinterpret()                               #line 68#line 69#line 70#line 71#line 72
 ok()                                                   #line 73#line 74

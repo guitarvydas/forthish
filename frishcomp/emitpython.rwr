@@ -1,7 +1,12 @@
 % rewrite emitPython {
 
 Main [TopLevel+] = ‛
-Stack = []; BUFF = ""; BUFP = 0
+class StateClass:⤷
+    def __init__ (self):⤷
+        self.Stack = []
+	self.BUFF = ""
+	self.BUFP = 0⤶⤶
+State = StateClass ()
 def Lookup (dict, key):⤷
     if key == '':⤷
         return None, None⤶
@@ -22,7 +27,7 @@ TopLevel_comment [s line?] =‛\n«s»«line»’
 TopLevel_line [line] =‛«line»’
 
 Defvar [ __ lval _eq e line?] = ‛\n«lval» = «e»«line»’
-Defsubr [ _4 ident StatementBlock line?] = ‛\ndef «ident» ():⤷\nglobal Stack, BUFF, BUFP⤶«StatementBlock»«line»\n’
+Defsubr [ _4 ident StatementBlock line?] = ‛\ndef «ident» ():⤷\nglobal State⤶«StatementBlock»«line»\n’
 Defobj [ _defobj ident Formals line1? lb line2? init+ rb line3?] = ‛\nclass «ident»:⤷\ndef __init__ (self,«Formals»):«line1»⤷«line2»«init»«line3»⤶⤶\n’
 StatementBlock [ line1? lb line2? Statement     line3? rb  line4?] = ‛«line1»«line2»⤷«Statement»«line3»«line4»⤶’
 
@@ -43,35 +48,35 @@ R_Statement_line [line rec?] = ‛«line»«rec»’
 CommaIdent [_comma ident] = ‛, «ident»’
 
 Builtin [x line?] = ‛«x»«line»’
-BuiltinPhrase_pop [_] = ‛Stack.pop ()’
-BuiltinPhrase_popchar [_] = ‛chr(Stack.pop ())’
-BuiltinPhrase_push [_ lp exp rp] = ‛Stack.append («exp»)’
+BuiltinPhrase_pop [_] = ‛State.Stack.pop ()’
+BuiltinPhrase_popchar [_] = ‛chr(State.Stack.pop ())’
+BuiltinPhrase_push [_ lp exp rp] = ‛State.Stack.append («exp»)’
 BuiltinPhrase_scanfor [_ lp want rp] = ‛
     found = ""
-    while BUFP < len(BUFF):⤷
-        x = BUFF[BUFP]
-        BUFP += 1
+    while State.BUFP < len(State.BUFF):⤷
+        x = State.BUFF[State.BUFP]
+        State.BUFP += 1
         if «want» == x:⤷
             break⤶
         else:⤷
             found += x⤶⤶
-    Stack.append(found)
+    State.Stack.append(found)
 ’
 BuiltinPhrase_assoc [_ lp dict _comma1 str _comma2 addr rp] = ‛\n«dict» [«str»] = «addr»’
 BuiltinPhrase_lookup [_ lp dict _comma1 str rp] = ‛Lookup («dict», «str»)’
 BuiltinPhrase_printnl [_] = ‛print ()’
 BuiltinPhrase_print [_ lp exp rp] = ‛print («exp», end="")’
-BuiltinPhrase_emptyinput [_] = ‛(BUFP >= len(BUFF))’
+BuiltinPhrase_emptyinput [_] = ‛(State.BUFP >= len(State.BUFF))’
 BuiltinPhrase_emptystring [_ lp s rp] = ‛(not «s»)’
 BuiltinPhrase_quit [_] = ‛\nraise SystemExit’
-BuiltinPhrase_stack [_] = ‛Stack’
+BuiltinPhrase_stack [_] = ‛State.Stack’
 BuiltinPhrase_freshdict [_] = ‛{}’
 BuiltinPhrase_exec [_ f] = ‛«f»()’
 BuiltinPhrase_isdigits [_ lp exp rp] = ‛«exp».isdigit()’
 BuiltinPhrase_toint [_ lp exp rp] = ‛int («exp»)’
 BuiltinPhrase_input [_] = ‛
-BUFF = input("OK ")
-BUFP = 0
+State.BUFF = input("OK ")
+State.BUFP = 0
 ’
 BuiltinPhrase_unrecognized [_ ident args?] = ‛«_» ⎝ error - unrecognized builtin (with given arguments) ⎠ «args» ’
 
