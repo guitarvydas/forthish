@@ -1,9 +1,30 @@
+import re
+
+S = None
+R = None
+RAM = None
+LAST = None
+IP = None
+BUFF = None
+BUFP = None
+
+class Stack(list):
+    def push(my, *items):
+        my.extend(items)
+
 class StateClass:
     def __init__ (self):
-        self.Stack = []
+        self.S = Stack()
+        self.R = Stack()
+        self.RAM = []
+        self.LAST = -1
+        self.IP = None
+        self.W = None;
         self.BUFF = ""
         self.BUFP = 0
+
 State = StateClass ()
+
 def Lookup (dict, key):
     if key == '':
         return None, None
@@ -23,48 +44,48 @@ def xbye ():
 def xdot ():
     global State
     # ( n --) Print TOS
-    print (State.Stack.pop (), end="")
+    print (State.S.pop (), end="")
     print ()                                           #line 2
 
 def xdots ():
     global State
     # ( --) Print stack contents
-    print (State.Stack, end="")
+    print (State.S, end="")
     print ()                                           #line 3
 
 def xadd ():
     global State                                       #line 4
     # ( a b -- sum)                                    #line 5
 
-    B = State.Stack.pop ()                             #line 6
+    B = State.S.pop ()                                 #line 6
 
-    A = State.Stack.pop ()                             #line 7
-    State.Stack.append ( A+ B)                         #line 8#line 9
+    A = State.S.pop ()                                 #line 7
+    State.S.append ( A+ B)                             #line 8#line 9
 
 def xsub ():
     global State                                       #line 10
     # ( a b -- diff)                                   #line 11
 
-    B = State.Stack.pop ()                             #line 12
+    B = State.S.pop ()                                 #line 12
 
-    A = State.Stack.pop ()                             #line 13
-    State.Stack.append ( A- B)                         #line 14#line 15
+    A = State.S.pop ()                                 #line 13
+    State.S.append ( A- B)                             #line 14#line 15
 
 def xswap ():
     global State                                       #line 16
     # ( a b -- b a)                                    #line 17
 
-    B = State.Stack.pop ()                             #line 18
+    B = State.S.pop ()                                 #line 18
 
-    A = State.Stack.pop ()                             #line 19
-    State.Stack.append ( B)                            #line 20
-    State.Stack.append ( A)                            #line 21#line 22#line 23
+    A = State.S.pop ()                                 #line 19
+    State.S.append ( B)                                #line 20
+    State.S.append ( A)                                #line 21#line 22#line 23
 
 def xword ():
     global State                                       #line 24
     # (char -- string) Read in string delimited by char #line 25
 
-    wanted = chr(State.Stack.pop ())                   #line 26
+    wanted = chr(State.S.pop ())                       #line 26
 
     found = ""
     while State.BUFP < len(State.BUFF):
@@ -74,21 +95,21 @@ def xword ():
             break
         else:
             found += x
-    State.Stack.append(found)
+    State.S.append(found)
                                                        #line 27#line 28#line 29
 
 def xinterpret ():
     global State                                       #line 30
     # ( string --) Execute word                        #line 31
 
-    word = State.Stack.pop ()
+    word = State.S.pop ()
     if(  word):                                        #line 35
 
         found, subr = Lookup (subrs,  word)            #line 36
         if  found:                                     #line 37
             subr()                                     #line 38
         elif  word.isdigit():
-            State.Stack.append (int ( word))
+            State.S.append (int ( word))
         else:                                          #line 42
             print ( word, end="")                      #line 43
             print ( "?", end="")                       #line 44
@@ -115,7 +136,7 @@ def ok ():
         State.BUFP = 0
                                                        #line 64
         while not (State.BUFP >= len(State.BUFF)):     #line 65
-            State.Stack.append ( blank)                #line 66
+            State.S.append ( blank)                    #line 66
             xword()                                    #line 67
             xinterpret()                               #line 68#line 69#line 70#line 71#line 72
 ok()                                                   #line 73#line 74

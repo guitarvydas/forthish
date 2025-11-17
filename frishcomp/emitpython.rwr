@@ -1,12 +1,33 @@
 % rewrite emitPython {
 
 Main [TopLevel+] = ‛
+import re
+
+S = None
+R = None
+RAM = None
+LAST = None
+IP = None
+BUFF = None
+BUFP = None
+
+class Stack(list):⤷
+    def push(my, *items):⤷
+        my.extend(items)⤶⤶
+
 class StateClass:⤷
     def __init__ (self):⤷
-        self.Stack = []
-	self.BUFF = ""
-	self.BUFP = 0⤶⤶
+        self.S = Stack() 
+        self.R = Stack()
+        self.RAM = []
+        self.LAST = -1
+        self.IP = None
+        self.W = None;
+        self.BUFF = ""
+        self.BUFP = 0⤶⤶
+
 State = StateClass ()
+
 def Lookup (dict, key):⤷
     if key == '':⤷
         return None, None⤶
@@ -48,9 +69,9 @@ R_Statement_line [line rec?] = ‛«line»«rec»’
 CommaIdent [_comma ident] = ‛, «ident»’
 
 Builtin [x line?] = ‛«x»«line»’
-BuiltinPhrase_pop [_] = ‛State.Stack.pop ()’
-BuiltinPhrase_popchar [_] = ‛chr(State.Stack.pop ())’
-BuiltinPhrase_push [_ lp exp rp] = ‛State.Stack.append («exp»)’
+BuiltinPhrase_pop [_] = ‛State.S.pop ()’
+BuiltinPhrase_popchar [_] = ‛chr(State.S.pop ())’
+BuiltinPhrase_push [_ lp exp rp] = ‛State.S.append («exp»)’
 BuiltinPhrase_scanfor [_ lp want rp] = ‛
     found = ""
     while State.BUFP < len(State.BUFF):⤷
@@ -60,7 +81,7 @@ BuiltinPhrase_scanfor [_ lp want rp] = ‛
             break⤶
         else:⤷
             found += x⤶⤶
-    State.Stack.append(found)
+    State.S.append(found)
 ’
 BuiltinPhrase_assoc [_ lp dict _comma1 str _comma2 addr rp] = ‛\n«dict» [«str»] = «addr»’
 BuiltinPhrase_lookup [_ lp dict _comma1 str rp] = ‛Lookup («dict», «str»)’
@@ -69,7 +90,7 @@ BuiltinPhrase_print [_ lp exp rp] = ‛print («exp», end="")’
 BuiltinPhrase_emptyinput [_] = ‛(State.BUFP >= len(State.BUFF))’
 BuiltinPhrase_emptystring [_ lp s rp] = ‛(not «s»)’
 BuiltinPhrase_quit [_] = ‛\nraise SystemExit’
-BuiltinPhrase_stack [_] = ‛State.Stack’
+BuiltinPhrase_stack [_] = ‛State.S’
 BuiltinPhrase_freshdict [_] = ‛{}’
 BuiltinPhrase_exec [_ f] = ‛«f»()’
 BuiltinPhrase_isdigits [_ lp exp rp] = ‛«exp».isdigit()’
