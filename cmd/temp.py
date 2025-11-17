@@ -1,0 +1,42 @@
+def initialize_code():
+    code("drop", lambda : S.pop())  # ( a --) Drop TOS.
+    code("dup", lambda : S.push(S[-1]))  # ( a -- a a) Duplicate TOS.
+    code("negate", lambda : S.append(-S.pop()))  # ( n -- -n)
+    code("emit", lambda : print(chr(int(S.pop())), end=""))  # ( n --) Emit specified character.
+    code("cr", lambda : print(""))  # ( --) Print carriage return.
+    code(".", lambda : print(f"{S.pop()} ", end=""))  # ( n --) Print TOS.
+    code(".s", lambda : print(S))
+    code("+", lambda : S.append(S.pop() + S.pop()))  # ( a b -- sum)
+    code("*", lambda : S.append(S.pop() * S.pop()))  # ( a b -- product)
+    code("swap", xswap)
+    code("-",    xsub)
+    code("/",    xdiv)
+    code("word", xword)
+    code('"', xquote, 1)
+    code('."', xdotquote)
+    code("(", xcomment, 1)
+    code("(literal)", doliteral)
+    code("branch", xbranch)
+    code("0branch", x0branch)
+    code("if", xif, 1)
+    code("else", xelse, 1)
+    code("then", xthen, 1)
+    code(name, doconst)
+    code("constant", xconst)
+    code(name, lambda : S.push(slot))
+    code("create", xcreate)
+    code(",", lambda : comma(S.pop()))
+    code("variable", xvar)
+    code("dump", xdump)
+    code("@", lambda: S.append(RAM[S.pop()]))
+    code("!", xstore)
+    code("bye",  xbye)
+    code("find", xfind)
+    code("'", xtick)
+    code("None", lambda : S.append(None))  # ( -- None) Push Python None on stack.
+    code("words", xwords)    
+    code("execute", xexecute)
+    code(S.pop(), doword)
+    code(":", xcolon)
+    code(";", xsemi, 1)
+    code("interpret", xinterpret)

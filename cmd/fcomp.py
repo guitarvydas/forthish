@@ -53,22 +53,10 @@ def code(name, does, flags=0):
 
 initialize ()
 
-code("drop", lambda : S.pop())  # ( a --) Drop TOS.
-code("dup", lambda : S.push(S[-1]))  # ( a -- a a) Duplicate TOS.
-code("negate", lambda : S.append(-S.pop()))  # ( n -- -n)
-code("emit", lambda : print(chr(int(S.pop())), end=""))  # ( n --) Emit specified character.
-code("cr", lambda : print(""))  # ( --) Print carriage return.
-code(".", lambda : print(f"{S.pop()} ", end=""))  # ( n --) Print TOS.
-code(".s", lambda : print(S))
-code("+", lambda : S.append(S.pop() + S.pop()))  # ( a b -- sum)
-code("*", lambda : S.append(S.pop() * S.pop()))  # ( a b -- product)
     
 def xswap(): "( a b -- b a)"; x = S[-1]; S[-1] = S[-2]; S[-2] = x
-code("swap", xswap)
 def xsub():  "(a b -- diff)"; xswap(); S.append(S.pop() - S.pop())
-code("-",    xsub)
 def xdiv():  "(a b -- div)"; xswap(); S.append(S.pop() / S.pop())
-code("/",    xdiv)
 
 def xword():
     "(char -- string) Read in string delimited by char."
@@ -86,7 +74,6 @@ def xword():
         else:
             found += x
     S.append(found)
-code("word", xword)
 
 # Example of state-smart word, which Brodie sez not to do. Sorry, Leo...
 # This sin allows it to be used the same way compiling or interactive.
@@ -98,13 +85,11 @@ code('"', xquote, 1)
 def xdotquote(): "( --) Print string."; xquote(); print(S.pop(), end="")
 code('."', xdotquote)
 def xcomment(): "( --) Read up to close paren."; S.push(41); xword(); S.pop()
-code("(", xcomment, 1)
 
 def doliteral():  # Inside definitions only, pushes compiled literal to stack.
     global IP
     S.push(RAM[IP])  # Push item at IP on stack.
     IP += 1          # Advance IP past item to continue execution.
-code("(literal)", doliteral)
 def literalize():
     "Compile literal into definition."
     RAM.append(_find("(literal)"))  # Compile address of doliteral.
@@ -114,7 +99,6 @@ def xbranch():
     "Inside definitions, jump to address in next cell."
     global IP
     IP = RAM[IP]  # Move IP to address in cell.
-code("branch", xbranch)
 def x0branch():
     "Inside definitions, jump to address in next cell, if false."
     global IP
@@ -122,14 +106,12 @@ def x0branch():
         IP += 1  # Skip over to continue.
     else:
         IP = RAM[IP]  # Move IP to address in cell.
-code("0branch", x0branch)
 
 def xif():
     "( f --) Eval if flag is true."
     RAM.append(_find("0branch"))
     R.push(len(RAM))  # Push next address to be updated on else or then.
     RAM.append(-1)    # Placeholder for target jump.
-code("if", xif, 1)
 def xelse():
     "( --) Begin opposite clause."
     hanging = R.pop()            # Get "if" slot waiting for address.
@@ -137,11 +119,9 @@ def xelse():
     R.push(len(RAM))             # Push next address to be updated on then.
     RAM.append(-1)               # Placeholder for target jump.
     RAM[hanging] = len(RAM)      # Update "if" slot with next address.
-code("else", xelse, 1)
 def xthen():
     "( --) Close out if/else/then clause."
     RAM[R.pop()] = len(RAM)
-code("then", xthen, 1)
 
 def doconst():
     "( --) Handle constant in definition."
@@ -154,7 +134,6 @@ def xconst():
     "( value | name --) Add constant to dictionary."
     S.push(32); xword()
     const(S.pop(), S.pop())
-code("constant", xconst)
 
 const("pi", 3.14159)
 
@@ -165,9 +144,7 @@ def create(name):
 def xcreate():
     "( name | --) Add to dictionary."
     S.push(32); xword(); create(S.pop())
-code("create", xcreate)
 def comma(value): "( value --) Append to dictionary."; RAM.append(value)
-code(",", lambda : comma(S.pop()))
 def var(name, value):
     "( name value --) Add variable to dictionary."
     create(name)
@@ -176,7 +153,6 @@ def xvar():
     "( name | value --) Add variable to dictionary."
     S.append(32); xword()
     var(S.pop(), S.pop())
-code("variable", xvar)
 
 def xdump():
     "( start n --) Dump RAM."
@@ -185,14 +161,10 @@ def xdump():
     print("-"*64)
     for a in range(start, start + min(n, (len(RAM) - start))):
         print(f"{a:04}: {RAM[a]}")
-code("dump", xdump)
 
-code("@", lambda: S.append(RAM[S.pop()]))
 def xstore(): "( n a --) Store n at a."; a = S.pop(); RAM[a] = S.pop()
-code("!", xstore)
 
 def xbye(): "( --) Leave interpreter."; raise SystemExit
-code("bye",  xbye)
 
 def _find(name):
     "( name -- cfa|0) Find CFA of word name."
@@ -216,15 +188,12 @@ def xfind():
         immediate = -1
         if (RAM[S[-1] - 1] & 1): immediate = 1
         S.push(immediate)
-code("find", xfind)
 
 def xtick():
     "( name -- xt|-1) Search for execution token of word name."
     S.append(32); xword()
     S.push(_find(S.pop()))
-code("'", xtick)
 
-code("None", lambda : S.append(None))  # ( -- None) Push Python None on stack.
 
 # Note that these are no longer as "correct" as they could be since
 # they are making the assumption that the variable data is stored just
@@ -244,7 +213,6 @@ def xwords():
         print(RAM[x + 1], end=" ")
         x = RAM[x]
     print()
-code("words", xwords)    
 
 def xexecute():
     "( xt --) Execute xt address."
@@ -253,7 +221,6 @@ def xexecute():
         RAM[S.pop()]()
     except IndexError:
         print("Stack empty!")
-code("execute", xexecute)
 
 def doword():
     "Execute word definition."
@@ -275,12 +242,10 @@ def xcolon():
     S.append(32); xword()
     code(S.pop(), doword)
     fvset("state", 1)  # Start compiling.
-code(":", xcolon)
 def xsemi():
     "( --) Finish definition."
     RAM.append(-1)  # Marker for end of definition.
     fvset("state", 0)
-code(";", xsemi, 1)
 
 def xinterpret():
     "( string --) Execute word."
@@ -310,14 +275,54 @@ def xinterpret():
             print(f"{word} ?")
             return False
     return True
-code("interpret", xinterpret)
 
-var("state", 0)  # 0 = interpret, 1 = compile
+
+def initialize_code():
+    var("state", 0)  # 0 = interpret, 1 = compile
+    code("drop", lambda : S.pop())  # ( a --) Drop TOS.
+    code("dup", lambda : S.push(S[-1]))  # ( a -- a a) Duplicate TOS.
+    code("negate", lambda : S.append(-S.pop()))  # ( n -- -n)
+    code("emit", lambda : print(chr(int(S.pop())), end=""))  # ( n --) Emit specified character.
+    code("cr", lambda : print(""))  # ( --) Print carriage return.
+    code(".", lambda : print(f"{S.pop()} ", end=""))  # ( n --) Print TOS.
+    code(".s", lambda : print(S))
+    code("+", lambda : S.append(S.pop() + S.pop()))  # ( a b -- sum)
+    code("*", lambda : S.append(S.pop() * S.pop()))  # ( a b -- product)
+    code("swap", xswap)
+    code("-",    xsub)
+    code("/",    xdiv)
+    code("word", xword)
+    code('"', xquote, 1)
+    code('."', xdotquote)
+    code("(", xcomment, 1)
+    code("(literal)", doliteral)
+    code("branch", xbranch)
+    code("0branch", x0branch)
+    code("if", xif, 1)
+    code("else", xelse, 1)
+    code("then", xthen, 1)
+    code("constant", xconst)
+    code("create", xcreate)
+    code(",", lambda : comma(S.pop()))
+    code("variable", xvar)
+    code("dump", xdump)
+    code("@", lambda: S.append(RAM[S.pop()]))
+    code("!", xstore)
+    code("bye",  xbye)
+    code("find", xfind)
+    code("'", xtick)
+    code("None", lambda : S.append(None))  # ( -- None) Push Python None on stack.
+    code("words", xwords)    
+    code("execute", xexecute)
+    code(":", xcolon)
+    code(";", xsemi, 1)
+    code("interpret", xinterpret)
 
 import sys
 
 def main():
     global BUFF, BUFP
+    initialize_code ()
     # Read lines from stdin
     for line in sys.stdin:
         # Remove trailing newline
