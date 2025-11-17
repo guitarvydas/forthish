@@ -6,14 +6,40 @@ APP = dict(
 
 import re
 
+S = None
+R = None
+RAM = None
+LAST = None
+IP = None
+BUFF = None
+BUFP = None
+
 class Stack(list):
     def push(my, *items):
         my.extend(items)
 
-S = Stack(); R = Stack()
-RAM = []; LAST = -1
-IP = None; W = None;
-BUFF = ""; BUFP = 0
+class State:
+    def __init__ (self):
+        self.S = Stack() 
+        self.R = Stack()
+        self.RAM = []
+        self.LAST = -1
+        self.IP = None
+        self.W = None;
+        self.BUFF = ""
+        self.BUFP = 0
+
+def initialize ():
+    global S, R, RAM, LAST, IP, BUFF, BUFP
+    St = State ()
+    S = St.S
+    R = St.R
+    RAM = St.RAM
+    LAST = St.LAST
+    IP = St.IP
+    BUFF = ""
+    BUFP = 0
+
 
 def code(name, does, flags=0):
     "( name does /flags/ --) Add new word to RAM dictionary."
@@ -24,6 +50,8 @@ def code(name, does, flags=0):
     RAM.append(flags)  # Flags
     RAM.append(does)   # Code pointer.
     LAST = x
+
+initialize ()
 
 code("drop", lambda : S.pop())  # ( a --) Drop TOS.
 code("dup", lambda : S.push(S[-1]))  # ( a -- a a) Duplicate TOS.
@@ -290,7 +318,6 @@ import sys
 
 def main():
     global BUFF, BUFP
-    
     # Read lines from stdin
     for line in sys.stdin:
         # Remove trailing newline
