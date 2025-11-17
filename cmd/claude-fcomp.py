@@ -5,6 +5,9 @@ APP = dict(
 )
 
 import re
+import sys
+import json
+import os
 
 S = None
 R = None
@@ -13,32 +16,104 @@ LAST = None
 IP = None
 BUFF = None
 BUFP = None
+St = None
 
 class Stack(list):
     def push(my, *items):
         my.extend(items)
 
 class State:
-    def __init__ (self):
+    def __init__(self):
         self.S = Stack() 
         self.R = Stack()
         self.RAM = []
         self.LAST = -1
         self.IP = None
-        self.W = None;
+        self.W = None
         self.BUFF = ""
         self.BUFP = 0
-
+        self.function_registry = {}
+    
+    def register_function(self, func):
+        """Register a function so it can be serialized/deserialized"""
+        self.function_registry[func.__name__] = func
+    
+    def serialize_item(self, item):
+        """Convert an item to JSON-serializable format"""
+        if callable(item):
+            if hasattr(item, '__name__'):
+                return {'__type__': 'function', '__name__': item.__name__}
+            else:
+                return {'__type__': 'function', '__name__': '<lambda>'}
+        elif isinstance(item, list):
+            return [self.serialize_item(x) for x in item]
+        elif isinstance(item, dict):
+            return {k: self.serialize_item(v) for k, v in item.items()}
+        else:
+            return item
+    
+    def deserialize_item(self, item):
+        """Convert from JSON format back to Python objects"""
+        if isinstance(item, dict) and item.get('__type__') == 'function':
+            func_name = item['__name__']
+            if func_name in self.function_registry:
+                return self.function_registry[func_name]
+            else:
+                print(f"Warning: function '{func_name}' not found in registry")
+                return None
+        elif isinstance(item, list):
+            return [self.deserialize_item(x) for x in item]
+        elif isinstance(item, dict):
+            return {k: self.deserialize_item(v) for k, v in item.items()}
+        else:
+            return item
+    
+    def to_json(self, filename):
+        data = {
+            'S': [self.serialize_item(item) for item in self.S],
+            'R': [self.serialize_item(item) for item in self.R],
+            'RAM': [self.serialize_item(item) for item in self.RAM],
+            'LAST': self.LAST,
+            'IP': self.serialize_item(self.IP),
+            'W': self.serialize_item(self.W),
+            'BUFF': self.BUFF,
+            'BUFP': self.BUFP
+        }
+        with open(filename, 'w') as f:
+            json.dump(data, f, indent=2)
+    
+    @classmethod
+    def from_json(cls, filename):
+        with open(filename, 'r') as f:
+            data = json.load(f)
+        
+        state = cls()
+        # Don't deserialize yet - just store the raw JSON data
+        # Deserialization will happen later after functions are registered
+        state.S.extend(data['S'])
+        state.R.extend(data['R'])
+        state.RAM = data['RAM']  # Keep as raw JSON data
+        state.LAST = data['LAST']
+        state.IP = data['IP']
+        state.W = data['W']
+        state.BUFF = data['BUFF']
+        state.BUFP = data['BUFP']
+        
+        return state
 
 def code(name, does, flags=0):
     "( name does /flags/ --) Add new word to RAM dictionary."
-    global LAST
+    global LAST, St
     x = len(RAM)       # This is "HERE".
     RAM.append(LAST)   # Link field.
     RAM.append(name)   # Word name.
     RAM.append(flags)  # Flags
     RAM.append(does)   # Code pointer.
     LAST = x
+    
+    # Register the function if it's callable
+    if St is not None and callable(does):
+        St.register_function(does)
 
 
     
@@ -124,13 +199,28 @@ def xconst():
     const(S.pop(), S.pop())
 
 
+def make_push_slot(slot):
+    """Factory function to create a push_slot function with a specific slot value."""
+    def push_slot():
+        S.push(slot)
+    push_slot.__name__ = f"push_slot_{slot}"
+    return push_slot
+
+def dopushslot():
+    """Push the slot value that follows the code pointer in RAM."""
+    S.push(RAM[W + 1])
+
 def create(name):
     "( name --) Add name to dictionary."
     slot = len(RAM) + 4  # Address immediately following CODE slot.
-    code(name, lambda : S.push(slot))
+    code(name, dopushslot)
+    RAM.append(slot)  # Store the slot value after the code pointer
+
 def xcreate():
     "( name | --) Add to dictionary."
     S.push(32); xword(); create(S.pop())
+
+
 def comma(value): "( value --) Append to dictionary."; RAM.append(value)
 def var(name, value):
     "( name value --) Add variable to dictionary."
@@ -251,6 +341,9 @@ def xinterpret():
             RAM.append(xt)
     else:
         word = S.pop()
+        # Skip empty words
+        if word == "":
+            return True
         if re.match(r"^-?\d*$", word):
             S.push(int(word))
             if not immediate: literalize()
@@ -277,6 +370,7 @@ def xmul(): "( a b -- product)"; S.append(S.pop() * S.pop())
 def xcomma(): "( value --) Append to dictionary."; comma(S.pop())
 def xfetch(): "( a -- n) Fetch value at address."; S.append(RAM[S.pop()])
 def xnone(): "( -- None) Push Python None on stack."; S.append(None)
+
 
 def initialize_code():
     var("state", 0)  # 0 = interpret, 1 = compile
@@ -320,9 +414,28 @@ def initialize_code():
     code(";", xsemi, 1)
     code("interpret", xinterpret)
 
-def initialize_globals ():
-    global S, R, RAM, LAST, IP, BUFF, BUFP
-    St = State ()
+def initialize_globals(state_filename):
+    global S, R, RAM, LAST, IP, BUFF, BUFP, St
+    
+    # Try to load existing state
+    if os.path.exists(state_filename):
+        try:
+            St = State.from_json(state_filename)
+            # Restore globals from loaded state
+            S = St.S
+            R = St.R
+            RAM = St.RAM
+            LAST = St.LAST
+            IP = St.IP
+            BUFF = St.BUFF
+            BUFP = St.BUFP
+            return St
+        except Exception as e:
+            print(f"Warning: Could not load state from {state_filename}: {e}")
+            print("Starting with fresh state...")
+    
+    # Create fresh state if file doesn't exist or loading failed
+    St = State()
     S = St.S
     R = St.R
     RAM = St.RAM
@@ -330,25 +443,80 @@ def initialize_globals ():
     IP = St.IP
     BUFF = ""
     BUFP = 0
+    return St
 
-import sys
-import json
+
 
 def main():
-    global BUFF, BUFP
-    initialize_globals ()
-    initialize_code ()
+    global BUFF, BUFP, S, R, RAM, LAST, IP
+    
+    state_filename = sys.argv[1] if len(sys.argv) > 1 else "state.json"
+    
+    # Check if we're loading existing state
+    loading_state = os.path.exists(state_filename)
+    
+    # Load or initialize state
+    St = initialize_globals(state_filename)
+    
+    # Save the loaded raw data before initialize_code
+    loaded_ram = None
+    loaded_s = None
+    loaded_r = None
+    loaded_last = None
+    if loading_state and len(RAM) > 0:
+        loaded_ram = RAM.copy()
+        loaded_s = list(S)
+        loaded_r = list(R)
+        loaded_last = LAST
+    
+    # Always initialize code to register all functions
+    # This creates a fresh dictionary
+    initialize_code()
+    
+    # If we loaded state, restore it now that functions are registered
+    if loaded_ram is not None:
+        # Clear the fresh state
+        RAM.clear()
+        S.clear()
+        R.clear()
+        
+        # Now deserialize with registered functions available
+        for item in loaded_ram:
+            RAM.append(St.deserialize_item(item))
+        for item in loaded_s:
+            S.append(St.deserialize_item(item))
+        for item in loaded_r:
+            R.append(St.deserialize_item(item))
+        
+        LAST = loaded_last
+        St.RAM = RAM
+        St.S = S
+        St.R = R
+        St.LAST = LAST
+    
     # Read lines from stdin
     for line in sys.stdin:
         # Remove trailing newline
         line = line.rstrip('\n')
         # Assign BUFF to the line
         BUFF = line
+        St.BUFF = BUFF
         ok = True  # Are things, indeed, ok?
         BUFP = 0
+        St.BUFP = BUFP
         while ok and BUFP < len(BUFF):
             ok = xinterpret()
-    print ("")
+        # Update state with current values
+        St.BUFP = BUFP
+    
+    # Save state before exiting
+    St.S = S
+    St.R = R
+    St.RAM = RAM
+    St.LAST = LAST
+    St.IP = IP
+    St.to_json(state_filename)
+    print("")
 
 if __name__ == "__main__":
-    main()        
+    main()

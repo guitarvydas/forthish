@@ -1,0 +1,297 @@
+{
+  "S": [
+    1,
+    2,
+    3
+  ],
+  "R": [],
+  "RAM": [
+    -1,
+    "state",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "<lambda>"
+    },
+    0,
+    0,
+    "pi",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "doconst"
+    },
+    3.14159,
+    5,
+    "drop",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xdrop"
+    },
+    10,
+    "dup",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xdup"
+    },
+    14,
+    "negate",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xnegate"
+    },
+    18,
+    "emit",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xemit"
+    },
+    22,
+    "cr",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xcr"
+    },
+    26,
+    ".",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xdot"
+    },
+b    30,
+    ".s",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xdots"
+    },
+    34,
+    "+",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xadd"
+    },
+    38,
+    "*",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xmul"
+    },
+    42,
+    "swap",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xswap"
+    },
+    46,
+    "-",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xsub"
+    },
+    50,
+    "/",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xdiv"
+    },
+    54,
+    "word",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xword"
+    },
+    58,
+    "\"",
+    1,
+    {
+      "__type__": "function",
+      "__name__": "xquote"
+    },
+    62,
+    ".\"",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xdotquote"
+    },
+    66,
+    "(",
+    1,
+    {
+      "__type__": "function",
+      "__name__": "xcomment"
+    },
+    70,
+    "(literal)",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "doliteral"
+    },
+    74,
+    "branch",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xbranch"
+    },
+    78,
+    "0branch",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "x0branch"
+    },
+    82,
+    "if",
+    1,
+    {
+      "__type__": "function",
+      "__name__": "xif"
+    },
+    86,
+    "else",
+    1,
+    {
+      "__type__": "function",
+      "__name__": "xelse"
+    },
+    90,
+    "then",
+    1,
+    {
+      "__type__": "function",
+      "__name__": "xthen"
+    },
+    94,
+    "constant",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xconst"
+    },
+    98,
+    "create",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xcreate"
+    },
+    102,
+    ",",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xcomma"
+    },
+    106,
+    "variable",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xvar"
+    },
+    110,
+    "dump",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xdump"
+    },
+    114,
+    "@",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xfetch"
+    },
+    118,
+    "!",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xstore"
+    },
+    122,
+    "bye",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xbye"
+    },
+    126,
+    "find",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xfind"
+    },
+    130,
+    "'",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xtick"
+    },
+    134,
+    "None",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xnone"
+    },
+    138,
+    "words",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xwords"
+    },
+    142,
+    "execute",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xexecute"
+    },
+    146,
+    ":",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xcolon"
+    },
+    150,
+    ";",
+    1,
+    {
+      "__type__": "function",
+      "__name__": "xsemi"
+    },
+    154,
+    "interpret",
+    0,
+    {
+      "__type__": "function",
+      "__name__": "xinterpret"
+    }
+  ],
+  "LAST": 158,
+  "IP": -1,
+  "W": null,
+  "BUFF": ".s",
+  "BUFP": 2
+}
