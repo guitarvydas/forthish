@@ -1,0 +1,4 @@
+body { width: 800px; margin: auto; }
+pre { background: #ffb; padding: 0 1pc 0 1pc; }
+table { width: 100%; }
+tr td { border: thin solid #aaa; border-width: 1px 0 0 0; }
