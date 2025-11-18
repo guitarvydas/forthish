@@ -1,3 +1,76 @@
+defsubr code (name, does) {
+    ⌈ ( name does /flags/ --) Add new word to RAM dictionary. ⌉
+    flags = 0
+    x = len (State.RAM)
+    State.RAM.append (State.LAST)
+    State.RAM.append (name)
+    State.RAM.append (flags)
+    State.RAM.append (does)
+    State.LAST = x
+
+defsubr xswap {
+    ⌈ ( a b -- b a) ⌉
+    deftemp B ⇐ %pop
+    deftemp A ⇐ %pop
+    %push (B)
+    %push (A)
+}
+defsubr xsub {
+    ⌈ ( a b -- diff) ⌉
+    deftemp B ⇐ %pop
+    deftemp A ⇐ %pop
+    %push (A - B)
+}
+defsubr xdiv {
+    ⌈ ( a b -- div) ⌉
+    xswap ()
+    State.S.append (State.S.pop () / State.S.pop ())
+}
+
+defsubr xword {
+    ⌈ (char -- string) Read in string delimited by char ⌉
+    deftemp wanted ⇐ %popchar
+    %scanfor (wanted)
+}
+
+
+⌈ Example of state-smart word, which Brodie sez not to do. Sorry, Leo... ⌉
+⌈ This sin allows it to be used the same way compiling or interactive. ⌉
+defsubr xquote {
+    "( -- string) Read up to closing quote, push to stack."
+    %push (34);
+    @xword
+    if 1 == fvget("state") {
+        @literalize
+    }
+}
+
+defsubr xdotquote {
+    ⌈ ( --) Print string. ⌉
+    @xquote
+    %print (%pop)
+}
+
+defsubr xcomment {
+    ⌈ ( --) Read up to close paren. ⌉
+    %push(41)
+    @xword
+    %pop
+}
+
+=======================
+
+def doliteral {
+    ⌈ Inside definitions only, pushes compiled literal to stack. ⌉
+    %push (RAM[IP])  # Push item at IP on stack.
+    IP += 1          # Advance IP past item to continue execution.
+def literalize():
+    "Compile literal into definition."
+    RAM.append(_find("(literal)"))  # Compile address of doliteral.
+    RAM.append(S.pop())             # Compile literal value.
+
+
+
 defsubr xbye { ⌈ ( --) Leave interpreter ⌉ %quit }
 defsubr xdot { ⌈ ( n --) Print TOS ⌉ %print (%pop) %printnl }
 defsubr xdots { ⌈ ( --) Print stack contents ⌉ %print (%stack) %printnl }
@@ -6,25 +79,6 @@ defsubr xadd {
     deftemp B ⇐ %pop
     deftemp A ⇐ %pop
     %push (A + B)
-}
-defsubr xsub {
-    ⌈ ( a b -- diff) ⌉
-    deftemp B ⇐ %pop
-    deftemp A ⇐ %pop
-    %push (A - B)
-}
-defsubr xswap {
-    ⌈ ( a b -- b a) ⌉
-    deftemp B ⇐ %pop
-    deftemp A ⇐ %pop
-    %push (B)
-    %push (A)
-}
-
-defsubr xword {
-    ⌈ (char -- string) Read in string delimited by char ⌉
-    deftemp wanted ⇐ %popchar
-    %scanfor (wanted)
 }
 
 defsubr xinterpret {
