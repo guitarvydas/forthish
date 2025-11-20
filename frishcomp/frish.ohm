@@ -42,8 +42,9 @@ frish {
      | "%scanfor" "(" ident ")" -- scanfor
      | "%assoc" "(" ident "," string "," Subraddress ")" -- assoc
      | "%lookup" "(" ident "," Exp ")" -- lookup
-     | "%printnl" -- printnl
+     | "%eol" -- eol
      | "%print" "(" Exp ")" -- print
+     | "%printAsCharacter" "(" Exp ")" -- printAsCharacter
      | "%empty-input" -- emptyinput
      | "%empty-string?" "(" Exp ")" -- emptystring
      | "%quit" -- quit
@@ -54,6 +55,11 @@ frish {
      | "%toint" "(" Exp ")" -- toint
      | "%input" -- input
      
+     | "%rpop" -- rpop
+     | "%rpush" "(" Exp ")" -- rpush
+     | "%rtop" -- rtop
+     | "%rthird" -- rthird
+
      | "%" #ident Args? -- unrecognized
 
    Args = "(" StuffInsideParentheses* ")"

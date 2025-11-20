@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>fcomp.py</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="doc.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">fcomp.py</h1>
+</header>
+<p>This is just about a fully functional Forth, or at least it
+demonstrates just about everything you need to have a reasonable
+implementation.</p>
+<h1 id="dictionary">Dictionary</h1>
+<p>These are all the words known to the system.</p>
+<h2 id="stack-manipulation">Stack Manipulation</h2>
+<table>
+<colgroup>
+<col style="width: 7%" />
+<col style="width: 22%" />
+<col style="width: 70%" />
+</colgroup>
+<thead>
+<tr>
+<th>word</th>
+<th>stack</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>drop</td>
+<td>( a –)</td>
+<td>Discard TOS.</td>
+</tr>
+<tr>
+<td>dup</td>
+<td>( a – a a)</td>
+<td>Duplicate TOS.</td>
+</tr>
+<tr>
+<td>swap</td>
+<td>( a b – b a)</td>
+<td>Exchange top two values on stack.</td>
+</tr>
+<tr>
+<td>i</td>
+<td>( – n)</td>
+<td>Copy first value on return stack to stack.</td>
+</tr>
+<tr>
+<td>i’</td>
+<td>( – n)</td>
+<td>Copy second value on return stack to stack.</td>
+</tr>
+<tr>
+<td>j</td>
+<td>( – n)</td>
+<td>Copy third value on return stack to stack.</td>
+</tr>
+<tr>
+<td>r&gt;</td>
+<td>( – n)</td>
+<td>Pop from return stack to stack.</td>
+</tr>
+<tr>
+<td>&gt;r</td>
+<td>( n –)</td>
+<td>Pop from stack to return stack.</td>
+</tr>
+<tr>
+<td>.s</td>
+<td>( –)</td>
+<td>Print contents of parameter stack non-destructively.</td>
+</tr>
+<tr>
+<td>”</td>
+<td>( –)</td>
+<td>Read to close quote, push on stack (or compile) as string.</td>
+</tr>
+<tr>
+<td>over</td>
+<td>( x y – x y z)</td>
+<td>Copy second on stack to TOS.</td>
+</tr>
+<tr>
+<td>rot</td>
+<td>( x y z – y z x)</td>
+<td>Rotate top three items on stack.</td>
+</tr>
+<tr>
+<td>?dup</td>
+<td>( n – n (n))</td>
+<td>Duplicate TOS if true.</td>
+</tr>
+<tr>
+<td>2dup</td>
+<td>( x y – x y x y)</td>
+<td>Duplicate two entries on stack.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="logic-and-math-operations">Logic and Math Operations</h2>
+<table>
+<thead>
+<tr>
+<th>word</th>
+<th>stack</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>or</td>
+<td>( a b – f)</td>
+<td>Logical or of a and b.</td>
+</tr>
+<tr>
+<td>and</td>
+<td>( a b – f)</td>
+<td>Logical and of a and b.</td>
+</tr>
+<tr>
+<td>not</td>
+<td>( x – ’x)</td>
+<td>Logical not of x.</td>
+</tr>
+<tr>
+<td>0&gt;</td>
+<td>( a – f)</td>
+<td>Negative number?</td>
+</tr>
+<tr>
+<td>0&lt;</td>
+<td>( a – f)</td>
+<td>Positive number?</td>
+</tr>
+<tr>
+<td>0=</td>
+<td>( a – f)</td>
+<td>Equal to zero?</td>
+</tr>
+<tr>
+<td>&gt;</td>
+<td>( a b – f)</td>
+<td>Is a greater than b?</td>
+</tr>
+<tr>
+<td>&lt;</td>
+<td>( a b – f)</td>
+<td>Is a less than b?</td>
+</tr>
+<tr>
+<td>=</td>
+<td>( a b – f)</td>
+<td>Are a and b equivalent?</td>
+</tr>
+<tr>
+<td>negate</td>
+<td>( n – -n)</td>
+<td>Flip sign of n.</td>
+</tr>
+<tr>
+<td>+</td>
+<td>( a b – sum)</td>
+<td>Add a and b.</td>
+</tr>
+<tr>
+<td>*</td>
+<td>( a b – product)</td>
+<td>Multiply a times b.</td>
+</tr>
+<tr>
+<td>-</td>
+<td>( a b – difference)</td>
+<td>Subtract b from a.</td>
+</tr>
+<tr>
+<td>/</td>
+<td>( a b – div)</td>
+<td>Divide a by b.</td>
+</tr>
+<tr>
+<td>None</td>
+<td>( – None)</td>
+<td>Push Python None to stack.</td>
+</tr>
+<tr>
+<td>pi</td>
+<td>( – pi)</td>
+<td>Constant for value of pi.</td>
+</tr>
+<tr>
+<td>1+</td>
+<td>( n – n+1)</td>
+<td>Increment TOS.</td>
+</tr>
+<tr>
+<td>1-</td>
+<td>( n – n-1)</td>
+<td>Decrement TOS.</td>
+</tr>
+<tr>
+<td>max</td>
+<td>( x y – max)</td>
+<td>Get maximum of top two entries.</td>
+</tr>
+<tr>
+<td>min</td>
+<td>( x y – min)</td>
+<td>Get minimum of two two entries.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="conditionals-and-loops">Conditionals and Loops</h2>
+<p>These can only be used inside definitions.</p>
+<table>
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 24%" />
+<col style="width: 67%" />
+</colgroup>
+<thead>
+<tr>
+<th>word</th>
+<th>stack</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>if</td>
+<td>( f –)</td>
+<td>Eval if flag f is True.</td>
+</tr>
+<tr>
+<td>else</td>
+<td>( –)</td>
+<td>Provide alternative for if.</td>
+</tr>
+<tr>
+<td>then</td>
+<td>( –)</td>
+<td>Close out if/else/then clause.</td>
+</tr>
+<tr>
+<td>begin</td>
+<td>( –)</td>
+<td>Start indefinite loop.</td>
+</tr>
+<tr>
+<td>until</td>
+<td>( f –)</td>
+<td>Close indefinite loop with test.</td>
+</tr>
+<tr>
+<td>do</td>
+<td>( limit index –)</td>
+<td>Begin counted loop.</td>
+</tr>
+<tr>
+<td>loop</td>
+<td>( –)</td>
+<td>Close do loop.</td>
+</tr>
+<tr>
+<td>+loop</td>
+<td>( inc –)</td>
+<td>Close counted loop, increments loop index with inc.</td>
+</tr>
+<tr>
+<td>leave</td>
+<td>( –)</td>
+<td>Exit do/loop early.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="control-and-io">Control and I/O</h2>
+<table>
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 17%" />
+<col style="width: 71%" />
+</colgroup>
+<thead>
+<tr>
+<th>word</th>
+<th>stack</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bye</td>
+<td>( –)</td>
+<td>Leave interpreter.</td>
+</tr>
+<tr>
+<td>cr</td>
+<td>( –)</td>
+<td>Print carriage return.</td>
+</tr>
+<tr>
+<td>emit</td>
+<td>( char –)</td>
+<td>Print ASCII character for char.</td>
+</tr>
+<tr>
+<td>.</td>
+<td>( value –)</td>
+<td>Print value.</td>
+</tr>
+<tr>
+<td>space</td>
+<td>( –)</td>
+<td>Print single space.</td>
+</tr>
+<tr>
+<td>spaces</td>
+<td>( n –)</td>
+<td>Print n spaces.</td>
+</tr>
+<tr>
+<td>.”</td>
+<td>( –)</td>
+<td>Read to close quote and print immediately.</td>
+</tr>
+<tr>
+<td>blk</td>
+<td>( – a)</td>
+<td>Variable, current loaded block number.</td>
+</tr>
+<tr>
+<td>buffer</td>
+<td>( – a)</td>
+<td>Variable, current block.</td>
+</tr>
+<tr>
+<td>block</td>
+<td>( n –)</td>
+<td>Read block data into buffer (if not already there).</td>
+</tr>
+<tr>
+<td>flush</td>
+<td>( –)</td>
+<td>Write block in buffer back to disk.</td>
+</tr>
+<tr>
+<td>load</td>
+<td>( n –)</td>
+<td>Load (if needed) and interpret code from block.</td>
+</tr>
+</tbody>
+</table>
+<p>A sample block file, <code>%playground.blk</code> is included with
+the distribution. It’s 16 blocks long, or 16 kilobytes. fcomp will use
+it for all file I/O operations for now.</p>
+<h2 id="introspection">Introspection</h2>
+<p>Words with leading <code>$</code> characters in stack effect diagram
+indicate a value read from the input stream,
+e.g. <code>( $name --)</code>.</p>
+<table>
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 29%" />
+<col style="width: 59%" />
+</colgroup>
+<thead>
+<tr>
+<th>word</th>
+<th>stack</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>interpret</td>
+<td>( string –)</td>
+<td>Execute word on top of stack.</td>
+</tr>
+<tr>
+<td>execute</td>
+<td>( xt –)</td>
+<td>Executes code at xt.</td>
+</tr>
+<tr>
+<td>words</td>
+<td>( –)</td>
+<td>Print list of all words in dictionary.</td>
+</tr>
+<tr>
+<td>’</td>
+<td>( $name – xt/-1)</td>
+<td>Find xt for word name. -1 if not found.</td>
+</tr>
+<tr>
+<td>find</td>
+<td>( $name – name 0/xt 1/xt -1)</td>
+<td>Search for word name.</td>
+</tr>
+<tr>
+<td>see</td>
+<td>( $name –)</td>
+<td>Decompile word name. Handles constants, codewords and words.</td>
+</tr>
+<tr>
+<td>dump</td>
+<td>( a n –)</td>
+<td>Dump cells starting at a, for n cells.</td>
+</tr>
+<tr>
+<td>word</td>
+<td>( char – string)</td>
+<td>Read in string delimited by char.</td>
+</tr>
+<tr>
+<td>step</td>
+<td>( $name –)</td>
+<td>Mark word $name for step debugging.</td>
+</tr>
+<tr>
+<td>?</td>
+<td>( a – v)</td>
+<td>Get contents of variable.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="editor">Editor</h2>
+<p>Yes, believe it or not, fcomp has an editor. Of sorts. This is
+intended as an example, not a serious programming tool (VSCode, you’re
+safe for now!).</p>
+<p>Words with leading <code>$</code> characters in stack effect diagram
+indicate a value read from the input stream,
+e.g. <code>( $name --)</code>.</p>
+<table>
+<thead>
+<tr>
+<th>word</th>
+<th>stack</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>line</td>
+<td></td>
+<td>Variable, current line in block.</td>
+</tr>
+<tr>
+<td>cursor</td>
+<td></td>
+<td>Variable, current character in line.</td>
+</tr>
+<tr>
+<td>type</td>
+<td>( –)</td>
+<td>Type out current line with cursor caret.</td>
+</tr>
+<tr>
+<td>list</td>
+<td>( n –)</td>
+<td>List specified block (loads if needed).</td>
+</tr>
+<tr>
+<td>l</td>
+<td>( –)</td>
+<td>List current block.</td>
+</tr>
+<tr>
+<td>t</td>
+<td>( n –)</td>
+<td>Set to specified line and type.</td>
+</tr>
+<tr>
+<td>p</td>
+<td>( $text –)</td>
+<td>Put text to current line.</td>
+</tr>
+</tbody>
+</table>
+<p>The block editor works on the block in <code>buffer</code>, which is
+pre-allocated to be 1024 characters (as per tradition). This makes for
+sixteen lines of 64 characters each, which was very convenient back in
+the old days with much more limited hardware. You can edit with the
+default RAM buffer, or attach it to a disk block (with
+<code>n block</code>, where <code>n</code> is the disk block to use).
+These examples use the default <code>%playground.blk</code> block
+file:</p>
+<pre><code>&gt; 4 list
+ 0 ( Block #04)                                                    
+ 1                                                                 
+ 2 : star ( --) 42 emit ;                                          
+ 3 : stars ( count --) 0 do star loop ;                            
+ 4 : dot ( --) star cr ;                                           
+ 5 : dash ( --) 5 stars cr ;                                       
+ 6 : f ( --) dash dot dash dot dot ;                               
+ 7                                                                 
+ 8 f ( That&#39;s how it&#39;s done!)                                      
+ ...
+ ok
+&gt; 8 t
+^f ( That&#39;s how it&#39;s done!)                                        8
+ ok
+&gt; p .&quot; Gimmee an &#39;F&#39;!&quot;  cr cr  f
+ ok
+&gt; l
+ 0 ( Block #04)                                                    
+ 1                                                                 
+ 2 : star ( --) 42 emit ;                                          
+ 3 : stars ( count --) 0 do star loop ;                            
+ 4 : dot ( --) star cr ;                                           
+ 5 : dash ( --) 5 stars cr ;                                       
+ 6 : f ( --) dash dot dash dot dot ;                               
+ 7                                                                 
+ 8 .&quot; Gimmee an &#39;F&#39;!&quot;  cr cr  f                                    
+...
+ ok
+&gt; 4 load
+Gimmee an &#39;F&#39;!
+
+*****
+*
+*****
+*
+*
+ ok</code></pre>
+<p>Note that the <code>list</code> display is truncated to 8 lines
+(since the other 8 are blank). Also, if you’ve made changes like this
+and you want to save them back to disk, use <code>flush</code> to write
+the current block buffer back out.</p>
+<h2 id="definitions">Definitions</h2>
+<p>Words with leading <code>$</code> characters in stack effect diagram
+indicate a value read from the input stream,
+e.g. <code>( $name --)</code>.</p>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 21%" />
+<col style="width: 66%" />
+</colgroup>
+<thead>
+<tr>
+<th>word</th>
+<th>stack</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>state</td>
+<td>( – a)</td>
+<td>Variable for interpreter state.</td>
+</tr>
+<tr>
+<td>constant</td>
+<td>( $name value –)</td>
+<td>Add constant to dictionary.</td>
+</tr>
+<tr>
+<td>create</td>
+<td>( $name –)</td>
+<td>Add label to dictionary.</td>
+</tr>
+<tr>
+<td>variable</td>
+<td>( $name value –)</td>
+<td>Store value as variable name.</td>
+</tr>
+<tr>
+<td>,</td>
+<td>( value –)</td>
+<td>Compile value into next cell in RAM.</td>
+</tr>
+<tr>
+<td>;</td>
+<td>( $name –)</td>
+<td>Begin word definition.</td>
+</tr>
+<tr>
+<td>:</td>
+<td>( –)</td>
+<td>End word definition.</td>
+</tr>
+<tr>
+<td>(</td>
+<td>( –)</td>
+<td>Read up to close paren and discard.</td>
+</tr>
+<tr>
+<td>immediate</td>
+<td>( –)</td>
+<td>Mark most recently compiled word for immediate execution.</td>
+</tr>
+<tr>
+<td>!</td>
+<td>( n a –)</td>
+<td>Store n at address a.</td>
+</tr>
+<tr>
+<td>@</td>
+<td>( a – n)</td>
+<td>Retrieve n from address a.</td>
+</tr>
+<tr>
+<td>+!</td>
+<td>( n a –)</td>
+<td>Add n to value in a.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="fragments">Fragments</h2>
+<p>These are used in compiled definitions.</p>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 21%" />
+<col style="width: 66%" />
+</colgroup>
+<thead>
+<tr>
+<th>word</th>
+<th>stack</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(literal)</td>
+<td>( –)</td>
+<td>Fragment, marks literal in next cell.</td>
+</tr>
+<tr>
+<td>0branch</td>
+<td>( f –)</td>
+<td>Fragment, jump to address in next cell if flag f is False.</td>
+</tr>
+<tr>
+<td>branch</td>
+<td>( –)</td>
+<td>Fragment, jump to address in next cell.</td>
+</tr>
+<tr>
+<td>(loop)</td>
+<td>( – f)</td>
+<td>Fragment, determines if loop is finished.</td>
+</tr>
+<tr>
+<td>(do)</td>
+<td>( limit index –)</td>
+<td>Fragment, sets up counted loop.</td>
+</tr>
+</tbody>
+</table>
+<h1 id="defining-new-words">Defining New Words</h1>
+<p>Forth is an extensible language, meaning that you can define new
+procedures, called “words”. These act like part of the language itself –
+in fact, there’s almost no difference between the built-in words and the
+ones you define. You can even override the definitions of the
+built-ins.</p>
+<p>A word is generally defined using the “:” (colon) to start the
+definition and the “;” (semicolon, or “semi”) to end it:</p>
+<pre><code>: hi ( --) &quot; Hello, World!&quot; . ;</code></pre>
+<p>Whatever immediately follows the colon becomes the name of the new
+definition (“hi”). It doesn’t have to be only letters, numbers or
+underscore (like Python). Forth doesn’t care what you call the words, as
+long as they don’t have spaces in them. So, “hi”, “Hi!” or “@#Fz” are
+all fair game (if you speak Martian).</p>
+<p>That bit with the parenthesis following the name might look like
+function arguments, but it’s actually a comment. Open paren tells the
+interpreter to ignore everything up to the closing paren. It’s generally
+used to provide a “stack picture”, which describes what arguments the
+word expects on the stack and what it will leave behind after its run.
+So, <code>( a b -- sum)</code> indicates that the word expects two
+arguments, a and b, on the stack, and will leave behind their sum when
+it finishes running. There are more examples in the table above.</p>
+<p>After that, the procedure is spelled out with words just as one might
+type at the prompt. Because we’ve told Forth that we’re compiling now,
+these words aren’t executed – they get added to the definition for
+<code>hi</code> incrementally. The semi (<code>;</code>) ends the
+definition and returns to regular interpretation.</p>
+<p>If you list the vocabulary with <code>words</code>, you’ll now see
+<code>hi</code> at the head of the list!</p>
+<h1 id="conditionals">Conditionals</h1>
+<p><em>Left blank because writer needs sleep.</em></p>
+<h1 id="loops">Loops</h1>
+<p><em>Left blank because writer needs sleep.</em></p>
+<h1 id="immediate-words">Immediate Words</h1>
+<p><em>Left blank because writer needs sleep.</em></p>
+<h1 id="under-the-hood">Under the Hood</h1>
+<p>Some information about the internals. You can definitely skip this on
+first read…</p>
+<p>If you’re comparing it to another implementation, you can think of
+%fcomp.py as DTC (Direct Threaded Code).</p>
+<h2 id="elective-words">Elective Words</h2>
+<p>To bootstrap this implementation, a number of words are implemented
+as host language functions (the CODEWORDs). However, not everything – at
+the bottom of the fcomp file, you’ll find the “elective” words
+implemented directly in Forth, in a big string that gets
+<code>evaluate</code>d. Note, among other things, this is where paren
+comments are defined.</p>
+<h2 id="compiling">Compiling</h2>
+<p>The words are stored as elements in an array named <code>RAM</code>.
+I call each element a “cell”. This mimics an old-skool Forth using
+contiguous memory – except a modern array can store elements of any
+size, not just an eight bit byte. This makes it convenient to use the
+datatypes of the host language – they’re stored just like they would be
+normally – but also takes advantage of Forth-style compilation and
+traversal.</p>
+<p>A compiled word is at least four cells long:</p>
+<pre><code>+-----+------+-------+-----+ --------------+
+| LFA | name | flags | CFA | parameters... |
++-----+------+-------+-----+ --------------+</code></pre>
+<p>The first, the Link Field Address, points to the LFA of the
+previously defined word (or -1) if it’s the first. The second cell is
+the word name as a string. Third is flags, which in this implementation
+<em>is</em> an eight bit byte. Lastly, we have the Code Field Address,
+which holds a pointer to a host-language native function that does the
+work.</p>
+<p>Currently, there are three possible flags:</p>
+<pre><code>+--------------+----------------+------+--------+-----------+
+| (8-? unused) | (5-7 reserved) | step | smudge | immediate |
++--------------+----------------+------+--------+-----------+</code></pre>
+<p>Immediate (0x01) indicates that the word should be executed even when
+compiling. The <code>immediate</code> word sets this bit. Smudge (0x02)
+is not used yet, but when available, will provide recursion
+capabilities. Step (0x04) indicates that the word should be executed in
+single steps for debugging. Use the <code>step</code> word to toggle
+this setting.</p>
+<p>Additional cells may be used as “parameters”, data to be used by the
+function in the CFA. For a constant or variable, this would be the
+actual value stored. For a defined word, it would be a list of CFAs for
+the words compiled into this word.</p>
+<p>Here’s a word called <code>star</code>. It prints out a single
+asterisk character:</p>
+<pre><code>: star 42 emit ;</code></pre>
+<p>Compiled, it might look like this:</p>
+<pre><code>+-----+------+-------+----------+--------------------+
+| LFA | name | flags | CFA      | parameters...      |
++-----+------+-------+----------+-----+----+----+----+
+| 249 | star | 0x00  | &lt;doword&gt; | 123 | 42 | 15 | -1 |
++-----+------+-------+----------+-----+----+----+----+</code></pre>
+<p><code>&lt;doword&gt;</code> is a reference to the Python function
+<code>doword()</code>, which will iterate through the parameters and
+call each compiled word in succession. <code>123</code> is the CFA of
+<code>(literal)</code>, which intereprets the next cell
+(<code>42</code>) and pushes it on the stack. <code>15</code> is the CFA
+of <code>emit</code>, which prints the number on TOS as an ASCII
+character. The definition is closed out with a <code>-1</code>, which
+tells <code>doword()</code> to stop traversing.</p>
+<p>An original-style Forth would terminate the definition with a link or
+code for <code>EXIT</code> instead of <code>-1</code>, but for a
+structured language like Python, it’s enough to just mark the end.</p>
+<h2 id="dumping-ram">Dumping RAM</h2>
+<p>You can inspect the RAM with the <code>dump</code> word. It takes a
+starting address and a count and will dump that many cells. It will not
+go past the end of RAM.</p>
+<p>However, while potentially fascinating, it’s not terribly productive
+to just dump random stuff. How can we look at something intentionally?
+Say a word definition, like <code>star</code> above.</p>
+<p>I can use <code>'</code> (tick) to find the CFA (code field address)
+of the word. Then subtract 3 to get the LFA (link field address), which
+is considered the start of the word record. Compare to the diagram
+above.</p>
+<pre><code>&gt; &#39; star 3 -  8 dump
+----------------------------------------------------------------
+0254: 249
+0255: star
+0256: 0
+0257: &lt;function doword at 0x0000022DCAA11590&gt;
+0258: 123
+0259: 42
+0260: 15
+0261: -1
+ ok</code></pre>
+<h2 id="decompiling">Decompiling</h2>
+<p>A dump is all right, but wouldn’t be nicer if the system could just
+show you the actual compiled word refereces so you don’t have to look
+them up? Yes, yes it would. The <code>see</code> word does just that.
+You can use it on constants and defined words. Everything else
+(including variables at this point) is assumed to be a codeword (which
+technically it <em>is</em>, but…).</p>
+<pre><code>&gt; see pi
+0176 : &lt;- 0172 | CONSTANT pi | 3.14159
+ ok
+&gt; see do
+0148 | &lt;- 0144 | CODEWORD do | 00000001
+ ok
+&gt; see stars
+0262 : &lt;- 0254 | WORD stars | 00000000
+0266 : 0123 - (literal)
+0267 : 0
+0268 : 0147 - (do)
+0269 : 0257 - star
+0270 : 0123 - (literal)
+0271 : 1
+0272 : 0155 - (loop)
+0273 : 0131 - 0branch
+0274 : 269
+ ok</code></pre>
+<p>The <code>stars</code> word is a bit more interesting than
+<code>star</code> example in the section on dump. You can see where
+literal values (0 for loop index and 1 for loop increment) are compiled
+in. You’ll also perhaps see special words with names in parentheses (the
+parentheses are part of the word name) that are only used in compiled
+definitions.</p>
+<h2 id="debugging">Debugging</h2>
+<p>Yep, you read that right. fcomp has a debugger. Not very fancy, but
+it can be pretty useful. Especially if you’re leaving wierd stuff on the
+stack or not handling what is there correctly… (This has <em>never</em>
+happened to me, of course.) To single step through a word, say
+<code>step WORDNAME</code>. The next time you invoke the word, fcomp
+will print a message that stepping has started and for each cycle
+through <code>doword()</code>, it will print the current IP, the state
+of the parameter and return stacks, and the word it’s about to execute.
+Press <code>[enter]</code> to continue for each step.</p>
+<pre><code>&gt; : star 42 emit ;
+ ok
+&gt; step star
+ ok
+&gt; star
+-- Stepping star...
+   IP 356 : [] : [-1] : (literal) &gt; 
+   IP 358 : [42] : [-1] : emit &gt; 
+* ok</code></pre>
+<p>Above, you can see the word <code>star</code> being defined, then
+marked for stepping, and finally invoked. The system prints a message to
+show that it’s entered the word to be stepped. The first item printed
+shows an IP location of 356, an empty parameter stack and return stack
+(we don’t care so much what’s on it as long as it stays balanced). The
+item at the end of the line is the name of the compiled word about to be
+executed. In this case, it’s <code>(literal)</code>, because the
+definition of <code>star</code> compiled in the number 42.</p>
+<p>Sure enough, on the next instruction, we can see that the IP is 2
+cells past 356 (because it had to skip over the compiled literal) and
+the next word to be executed is <code>emit</code>. After that, the
+asterisk is displayed, and <code>star</code> exits.</p>
+<p>Because <code>star</code> has been marked for debugging, if you call
+it in a loop, you’ll get that many chances to step through it:
+<code>: stars 0 do star loop ;</code>.</p>
+<p>You can also mark multiple words for debugging with separate
+invocations of <code>step</code>. If you invoke <code>step</code> on a
+word you’ve already marked, it will toggle single-step off for that
+word. Also, if you <code>see</code> (decompile) a word marked for
+debugging, it will show a flag set in binary digit position 2
+(<code>0b0100</code>, or 4):</p>
+<pre><code>&gt; see star
+0352 : &lt;- 0328 | WORD star | 00000100
+0356 : 0123 - (literal)
+0357 : 42
+0358 : 0015 - emit</code></pre>
+<h2 id="how-threaded-execution-works">How Threaded Execution Works</h2>
+<p><em>More to come…</em></p>
+<h1 id="colophon">Colophon</h1>
+<p>Generated with
+<code>pandoc --css=doc.css -s -o fcomp.html .\fcomp.md</code>.</p>
+</body>
+</html>

@@ -85,8 +85,9 @@ BuiltinPhrase_scanfor [_ lp want rp] = ‛
 ’
 BuiltinPhrase_assoc [_ lp dict _comma1 str _comma2 addr rp] = ‛\n«dict» [«str»] = «addr»’
 BuiltinPhrase_lookup [_ lp dict _comma1 str rp] = ‛Lookup («dict», «str»)’
-BuiltinPhrase_printnl [_] = ‛print ()’
+BuiltinPhrase_eol [_] = ‛print ()’
 BuiltinPhrase_print [_ lp exp rp] = ‛print («exp», end="")’
+BuiltinPhrase_printAsCharacter [_ lp exp rp] = ‛print (chr (int («exp»))), end="")’
 BuiltinPhrase_emptyinput [_] = ‛(State.BUFP >= len(State.BUFF))’
 BuiltinPhrase_emptystring [_ lp s rp] = ‛(not «s»)’
 BuiltinPhrase_quit [_] = ‛\nraise SystemExit’
@@ -95,6 +96,13 @@ BuiltinPhrase_freshdict [_] = ‛{}’
 BuiltinPhrase_exec [_ f] = ‛«f»()’
 BuiltinPhrase_isdigits [_ lp exp rp] = ‛«exp».isdigit()’
 BuiltinPhrase_toint [_ lp exp rp] = ‛int («exp»)’
+
+BuiltinPhrase_rpop [_] = ‛State.R.pop ()’
+BuiltinPhrase_rtop [_] = ‛State.R [-1]’
+BuiltinPhrase_rthird [_] = ‛State.R [-3]’
+BuiltinPhrase_rpush [_ lp exp rp] = ‛State.R.append («exp»)’
+
+
 BuiltinPhrase_input [_] = ‛
 State.BUFF = input("OK ")
 State.BUFP = 0

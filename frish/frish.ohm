@@ -53,7 +53,7 @@ frish {
      | "%digits?" "(" Exp ")" -- isdigits
      | "%toint" "(" Exp ")" -- toint
      | "%input" -- input
-     
+
      | "%" #ident Args? -- unrecognized
 
    Args = "(" StuffInsideParentheses* ")"

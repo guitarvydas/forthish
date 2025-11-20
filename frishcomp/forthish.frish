@@ -8,6 +8,130 @@ defsubr code (name, does) {
     State.RAM.append (does)
     State.LAST = x
 
+defsubr xdrop {
+    ⌈ ( a -- ) ⌉
+    %pop
+}
+
+defsubr xdup {
+    ⌈ ( a -- a a ) ⌉
+    deftemp A ⇐ %pop
+    %push (A)
+    %push (A)
+}
+
+defsubr xnegate {
+    ⌈ ( n -- (-n) ) ⌉
+    deftemp n ⇐ %pop
+    %push (-n)
+}
+
+defsubr xemit {
+    ⌈ ( c -- ) emit specified character ⌉
+    deftemp c ⇐ %pop
+    %printAsCharacter (c)
+}
+
+defsubr xdot { ⌈ ( n --) Print TOS ⌉ %print (%pop) %eol }
+defsubr xdots { ⌈ ( --) Print stack contents ⌉ %print (%stack) %eol }
+
+defsubr xadd {
+    ⌈ ( a b -- sum) ⌉
+    deftemp B ⇐ %pop
+    deftemp A ⇐ %pop
+    %push (A + B)
+}
+
+defsubr xmul {
+    ⌈ ( a b -- product ) ⌉
+    deftemp B ⇐ %pop
+    deftemp A ⇐ %pop
+    %push (A * B)
+}
+
+defsubr xeq {
+    ⌈ ( a b -- bool ) ⌉
+    deftemp B ⇐ %pop
+    deftemp A ⇐ %pop
+    %push (A == B)
+}
+
+defsubr xlt {
+    ⌈ ( a b -- bool ) ⌉
+    deftemp B ⇐ %pop
+    deftemp A ⇐ %pop
+    %push (A < B)
+}
+
+defsubr xgt {
+    ⌈ ( a b -- bool ) ⌉
+    deftemp B ⇐ %pop
+    deftemp A ⇐ %pop
+    %push (A > B)
+}
+
+defsubr xeq0 {
+    ⌈ ( a -- bool ) ⌉
+    deftemp a ⇐ %pop
+    %push (a == 0)
+}
+
+defsubr x0lt {
+    ⌈ ( a -- bool ) ⌉
+    deftemp a ⇐ %pop
+    %push (0 < a)
+}
+
+defsubr x0gt {
+    ⌈ ( a -- bool ) ⌉
+    deftemp a ⇐ %pop
+    %push (0 > a)
+}
+
+defsubr xnot {
+    ⌈ ( a -- bool ) ⌉
+    deftemp a ⇐ %pop
+    %push (not a)
+}
+
+defsubr xand {
+    ⌈ ( a b -- bool ) ⌉
+    deftemp b ⇐ %pop
+    deftemp a ⇐ %pop
+    %push (a and b)
+}
+
+defsubr xor {
+    ⌈ ( a b -- bool ) ⌉
+    deftemp b ⇐ %pop
+    deftemp a ⇐ %pop
+    %push (a or b)
+}
+
+defsubr xStoR {
+    ⌈ ( a --  ) ⌉
+    deftemp a ⇐ %pop
+    %rpush (a)
+}
+
+defsubr xRtoS {
+    ⌈ ( -- x ) ⌉
+    deftemp x ⇐ %rpop
+    %push (x)
+}
+
+defsubr xi {
+    ⌈ ( -- i ) get current loop index from R stack ⌉
+    deftemp i ⇐ %rtop
+    %push (i)
+}
+
+defsubr xj {
+    ⌈ ( -- j ) get outer loop index from R stack ⌉
+    deftemp j ⇐ %rthird
+    %push (j)
+}
+
 defsubr xswap {
     ⌈ ( a b -- b a) ⌉
     deftemp B ⇐ %pop
@@ -33,6 +157,45 @@ defsubr xword {
     %scanfor (wanted)
 }
 
+⌈ Example of state-smart word, which Brodie sez not to do. Sorry, Leo... ⌉
+⌈ This sin allows it to be used the same way compiling or interactive. ⌉
+defsubr xquote {
+    ⌈ ( -- string) Read up to closing dquote, push to stack ⌉
+    ⌈ A string in Forth begins with the word " (followed by a space) then all characters up to the next " ⌉
+    ⌈ E.G. " abc" ⌉
+    defsynonym DQ ≡ 34
+    %push (DQ)
+    @xword
+    [ %inCompilationState
+        | yes: %funcall literalize ()
+	| no: %pass
+    ]
+}
+
+defsubr xdotquote {
+    ⌈ ( -- ) parse and print a string ⌉
+    ⌈ ." Hello, World!" ⌉
+    @xquote
+    deftemp s ⇐ %pop
+    %print (s)
+}
+
+defsubr xcomment {
+    ⌈ ( -- ) parse and discard a comment ⌉
+    ⌈ e.g. ( a b c ) ⌉
+    defsynonym RPAR ≡ 42
+    %push(RPAR)
+    @xword
+    %pop
+}
+
+defsubr xdoliteral {
+    ⌈ Inside definitions only, pushed comiled literal to stack ⌉
+
+
+    
+
+defsubr xbye { ⌈ ( --) Leave interpreter ⌉ %quit }
 
 ⌈ Example of state-smart word, which Brodie sez not to do. Sorry, Leo... ⌉
 ⌈ This sin allows it to be used the same way compiling or interactive. ⌉
@@ -53,9 +216,6 @@ defsubr xdotquote {
 
 defsubr xcomment {
     ⌈ ( --) Read up to close paren. ⌉
-    %push(41)
-    @xword
-    %pop
 }
 
 =======================
@@ -70,16 +230,6 @@ def literalize():
     RAM.append(S.pop())             # Compile literal value.
 
 
-
-defsubr xbye { ⌈ ( --) Leave interpreter ⌉ %quit }
-defsubr xdot { ⌈ ( n --) Print TOS ⌉ %print (%pop) %printnl }
-defsubr xdots { ⌈ ( --) Print stack contents ⌉ %print (%stack) %printnl }
-defsubr xadd {
-    ⌈ ( a b -- sum) ⌉
-    deftemp B ⇐ %pop
-    deftemp A ⇐ %pop
-    %push (A + B)
-}
 
 defsubr xinterpret {
     ⌈ ( string --) Execute word ⌉
@@ -96,7 +246,7 @@ defsubr xinterpret {
 	} else {
 	    %print (word)
 	    %print ("?")
-	    %printnl
+	    %eol
 	}
     }
 }

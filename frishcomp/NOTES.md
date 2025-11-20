@@ -34,3 +34,14 @@ All functions are represented as integers. How does the machine decide to call a
 
 # Step 3
 Remove the REPL code from the machine. Restore machine state from `state.json`. Write machine state to `state.json`.
+
+
+
+
+
+---
+
+    [cond %inCompilationState
+        | yes: %funcall literalize ()
+	| no: %pass
+    ]

@@ -1,0 +1,105 @@
+#+options: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+options: author:t broken-links:nil c:nil creator:nil
+#+options: d:(not "LOGBOOK") date:t e:t email:nil expand-links:t f:t
+#+options: inline:t num:t p:nil pri:nil prop:nil stat:t tags:t
+#+options: tasks:t tex:t timestamp:t title:t toc:nil todo:t |:t
+#+title: Levels of Forth
+#+date: <2025-09-27 Sat>
+#+language: en
+#+select_tags: export
+#+exclude_tags: noexport
+#+creator: Emacs 30.1 (Org mode 9.7.11)
+#+cite_export:
+
+#+BEGIN_EXPORT typst
+#+END_EXPORT
+
+* Introduction
+In 1991, Glen Haydon described [[https://www.forth.org/literature/forthlev.html][six "levels" of Forth
+implementation]]. This is a reflection and discussion of how they might
+apply to a Forth written as a command processor in another language.
+
+I also want to try out the org-mode->Typst gateway, but that's a
+different thing.
+
+* Level 0
+This describes the most basic words in a Forth. However, some of these
+are strongly tied to a particular kind of implementation and are less
+immediately useful to us.
+
+** Math Words
+
+| word(s)    | Stack                | Description       | Commentary                                                                                                                                                                                                                                                                                    |
+|------------+----------------------+-------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| + - *      | ~( a b -- c)~        | Basic math ops.   | Integer operations. Where's divide? For early mini/microcomputers, division was an expensive operation.                                                                                                                                                                                       |
+| /MOD       | ~( a b -- rem quot)~ | Modulo operator.  | Returns remainder and quotient. Could be easily implemented with repeated subtractions.                                                                                                                                                                                                       |
+| */         | ~( a b c -- quot)~   | Precison math op. |                                                                                                                                                                                                                                                                                               |
+| MIN        | ~( a b -- min)~      | Minimum           |                                                                                                                                                                                                                                                                                               |
+| MAX        | ~( a b -- max)~      | Maximum           |                                                                                                                                                                                                                                                                                               |
+| NEGATE     | ~( a -- -a)~  | Logic operation. |                                                                                                                                                                                                                                                                                               |
+| ABS        | ~( a -- A)~   | Remove sign.     |                                                                                                                                                                                                                                                                                               |
+| AND OR XOR | ~( a b -- f)~     | Logic operation.     | Historically, Forths use 0 for false, and -1 (all bits set) for true, which means these operators are both logical and bitwise. This also has performance implications at assembly level. [fn:: See [[https://stackoverflow.com/questions/23832703/why-does-forth-return-1-as-a-flag-for-true]].] |
+| NOT        | ~( a -- !a)~      | Logic operation.     |                                                                                                                                                                                                                                                                                               |
+| =          | ~( a b -- f)~        | Equality test.    |                                                                                                                                                                                                                                                                                               |
+
+** Stack Manipulation Words
+
+| word(s)    | Stack             | Description          | Commentary                                                                                                                                                                                                                                                                                    |
+|------------+-------------------+----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| DUP        | ~( a -- a a)~     | Duplicate TOS.       |                                                                                                                                                                                                                                                                                               |
+| DROP       | ~( a --)~         | Remove TOS.          |                                                                                                                                                                                                                                                                                               |
+| SWAP       | ~( a b -- b a)~   | Swap top two values. |                                                                                                                                                                                                                                                                                               |
+| OVER       | ~( a b -- a b a)~ | Copy second value to top. |                                                                                                                                                                                                                                                                                               |
+
+** I/O Words
+
+| word(s)    | Stack             | Description          | Commentary                                                                                                                                                                                                                                                                                    |
+|------------+-------------------+----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| DECIMAL | ~( --)~     | Change to decimal format.            |                                                                         |
+| HEX     | ~( --)~     | Change to hexidecimal.               | Most modern usage confined to core dumps and web colour specifications. |
+| OCTAL   | ~( --)~     | Change to Octal (base 8).            | Super-duper obsolete (except for IBM weenies and Unix chmodders).       |
+| .       | ~( n --)~   | Print number at TOS.                 |                                                                         |
+| .R      | ~( R:n --)~ | Print number at top of return stack. |                                                                         |
+| CR      | ~( --)~     | Carriage return (newline).           |                                                                         |
+| EMIT    | ~( c --)~   | Prints TOS as single character.      | In the age of Unicode, not so useful.                                   |
+| KEY     | ~( -- c)~   | Get keyboard character.              |                                                                         |
+
+| word(s) | Stack   | Description      | Commentary |
+|---------+---------+------------------+------------|
+| :       | ~( name \vert --)~ | Define new word. |            |
+| ;       | ~( --)~ | End definition.  |            |
+| CREATE  | ~( --)~  |                  |            |
+| ,       |         |                  |            |
+| ALLOT   |         |                  |            |
+| IF      |         |                  |            |
+| ELSE    |         |                  |            |
+| THEN    |         |                  |            |
+| FOR     |         |                  |            |
+| NEXT    |         |                  |            |
+| I       |         |                  |            |
+| BEGIN   |         |                  |            |
+| UNTIL   |         |                  |            |
+
+These words are not in Mr. Haydon's document, but can be reasonably be
+expected to be included in a minimal Forth[fn::See
+https://www.1strecon.org/downloads/Forth_Resources/CM_Invention_of_Forth.pdf].
+
+| word(s)   | Stack | Description | Commentary |
+|-----------+-------+-------------+------------|
+| WORD      |       |             |            |
+| NUMBER    |       |             |            |
+| INTERPRET |       |             |            |
+| ABORT     |       |             |            |
+| EXPECT    |       |             |            |
+
+* Level 1
+According to Mr. Haydon, this is based on the
+[[https://archive.org/details/h42_fig-Forth_Installation_Manual][fig-Forth
+Installation Manual]]. It defined a subset of Forth that a hobbyist
+could easily get running on the micros of the time. It was an early
+open-source multi-platform reimplementation effort, since Moore's
+Forth was not available.
+
+* Level 2
+* Level 4
+* Level 5
