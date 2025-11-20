@@ -10,39 +10,47 @@ These are all the words known to the system.
 
 ## Stack Manipulation
 
-| word | stack         | description                                                |
-|------|---------------|------------------------------------------------------------|
-| drop | ( a --)       | Discard TOS.                                               |
-| dup  | ( a -- a a)   | Duplicate TOS.                                             |
-| swap | ( a b -- b a) | Exchange top two values on stack.                          |
-| i    | ( -- n)       | Copy first value on return stack to stack.                 |
-| i'   | ( -- n)       | Copy second value on return stack to stack.                |
-| j    | ( -- n)       | Copy third value on return stack to stack.                 |
-| r>   | ( -- n)       | Pop from return stack to stack.                            |
-| >r   | ( n --)       | Pop from stack to return stack.                            |
-| .s   | ( --)         | Print contents of parameter stack non-destructively.       |
-| "    | ( --)         | Read to close quote, push on stack (or compile) as string. |
+| word | stack             | description                                                |
+|------|-------------------|------------------------------------------------------------|
+| drop | ( a --)           | Discard TOS.                                               |
+| dup  | ( a -- a a)       | Duplicate TOS.                                             |
+| swap | ( a b -- b a)     | Exchange top two values on stack.                          |
+| i    | ( -- n)           | Copy first value on return stack to stack.                 |
+| i'   | ( -- n)           | Copy second value on return stack to stack.                |
+| j    | ( -- n)           | Copy third value on return stack to stack.                 |
+| r>   | ( -- n)           | Pop from return stack to stack.                            |
+| >r   | ( n --)           | Pop from stack to return stack.                            |
+| .s   | ( --)             | Print contents of parameter stack non-destructively.       |
+| "    | ( --)             | Read to close quote, push on stack (or compile) as string. |
+| over | ( x y -- x y z)   | Copy second on stack to TOS.                               |
+| rot  | ( x y z -- y z x) | Rotate top three items on stack.                           |
+| ?dup | ( n -- n (n))     | Duplicate TOS if true.                                     |
+| 2dup | ( x y -- x y x y) | Duplicate two entries on stack.                            |
 
 ## Logic and Math Operations
 
-| word   | stack                | description                |
-|--------|----------------------|----------------------------|
-| or     | ( a b -- f)          | Logical or of a and b.     |
-| and    | ( a b -- f)          | Logical and of a and b.    |
-| not    | ( x -- 'x)           | Logical not of x.          |
-| 0>     | ( a -- f)            | Negative number?           |
-| 0<     | ( a -- f)            | Positive number?           |
-| 0=     | ( a -- f)            | Equal to zero?             |
-| >      | ( a b -- f)          | Is a greater than b?       |
-| <      | ( a b -- f)          | Is a less than b?          |
-| =      | ( a b -- f)          | Are a and b equivalent?    |
-| negate | ( n -- -n)           | Flip sign of n.            |
-| +      | ( a b -- sum)        | Add a and b.               |
-| *      | ( a b -- product)    | Multiply a times b.        |
-| -      | ( a b -- difference) | Subtract b from a.         |
-| /      | ( a b -- div)        | Divide a by b.             |
-| None   | ( -- None)           | Push Python None to stack. |
-| pi     | ( -- pi)             | Constant for value of pi.  |
+| word   | stack                | description                     |
+|--------|----------------------|---------------------------------|
+| or     | ( a b -- f)          | Logical or of a and b.          |
+| and    | ( a b -- f)          | Logical and of a and b.         |
+| not    | ( x -- 'x)           | Logical not of x.               |
+| 0>     | ( a -- f)            | Negative number?                |
+| 0<     | ( a -- f)            | Positive number?                |
+| 0=     | ( a -- f)            | Equal to zero?                  |
+| >      | ( a b -- f)          | Is a greater than b?            |
+| <      | ( a b -- f)          | Is a less than b?               |
+| =      | ( a b -- f)          | Are a and b equivalent?         |
+| negate | ( n -- -n)           | Flip sign of n.                 |
+| +      | ( a b -- sum)        | Add a and b.                    |
+| *      | ( a b -- product)    | Multiply a times b.             |
+| -      | ( a b -- difference) | Subtract b from a.              |
+| /      | ( a b -- div)        | Divide a by b.                  |
+| None   | ( -- None)           | Push Python None to stack.      |
+| pi     | ( -- pi)             | Constant for value of pi.       |
+| 1+     | ( n -- n+1)          | Increment TOS.                  |
+| 1-     | ( n -- n-1)          | Decrement TOS.                  |
+| max    | ( x y -- max)        | Get maximum of top two entries. |
+| min    | ( x y -- min)        | Get minimum of two two entries. |
 
 ## Conditionals and Loops
 
@@ -58,6 +66,7 @@ These can only be used inside definitions.
 | do    | ( limit index --) | Begin counted loop.                                 |
 | loop  | ( --)             | Close do loop.                                      |
 | +loop | ( inc --)         | Close counted loop, increments loop index with inc. |
+| leave | ( --)             | Exit do/loop early.                                 |
 
 ## Control and I/O
 
@@ -67,9 +76,11 @@ These can only be used inside definitions.
 | cr     | ( --)       | Print carriage return.                              |
 | emit   | ( char --)  | Print ASCII character for char.                     |
 | .      | ( value --) | Print value.                                        |
+| space  | ( --)       | Print single space.                                 |
+| spaces | ( n --)     | Print n spaces.                                     |
 | ."     | ( --)       | Read to close quote and print immediately.          |
-| blk    |             | Variable, current loaded block number.              |
-| buffer |             | Variable, current block.                            |
+| blk    | ( -- a)     | Variable, current loaded block number.              |
+| buffer | ( -- a)     | Variable, current block.                            |
 | block  | ( n --)     | Read block data into buffer (if not already there). |
 | flush  | ( --)       | Write block in buffer back to disk.                 |
 | load   | ( n --)     | Load (if needed) and interpret code from block.     |
@@ -92,6 +103,7 @@ Words with leading `$` characters in stack effect diagram indicate a value read 
 | see       | ( $name --)                   | Decompile word name. Handles constants, codewords and words. |
 | dump      | ( a n --)                     | Dump cells starting at a, for n cells.                       |
 | word      | ( char -- string)             | Read in string delimited by char.                            |
+| step      | ( $name --)                   | Mark word $name for step debugging.                          |
 | ?         | ( a -- v)                     | Get contents of variable.                                    |
 
 ## Editor
@@ -172,6 +184,7 @@ Words with leading `$` characters in stack effect diagram indicate a value read 
 | immediate | ( --)             | Mark most recently compiled word for immediate execution. |
 | !         | ( n a --)         | Store n at address a.                                     |
 | @         | ( a -- n)         | Retrieve n from address a.                                |
+| +!        | ( n a --)         | Add n to value in a.                                      |
 
 ## Fragments
 
@@ -217,7 +230,16 @@ If you list the vocabulary with `words`, you'll now see `hi` at the head of the 
 
 # Under the Hood
 
-%fcomp.py is effectively a DTC (Direct Threaded Code) implementation.
+Some information about the internals. You can definitely skip this on first read...
+
+If you're comparing it to another implementation, you can think of %fcomp.py as DTC (Direct Threaded Code).
+
+## Elective Words
+
+To bootstrap this implementation, a number of words are implemented as host language functions (the CODEWORDs). However, not everything -- at the bottom of the fcomp file, you'll find the "elective" words implemented directly in Forth, in a big string that gets `evaluate`d. Note, among other things, this is where paren comments are defined.
+
+## Compiling
+
 
 The words are stored as elements in an array named `RAM`. I call each element a "cell". This mimics an old-skool Forth using contiguous memory -- except a modern array can store elements of any size, not just an eight bit byte. This makes it convenient to use the datatypes of the host language -- they're stored just like they would be normally -- but also takes advantage of Forth-style compilation and traversal.
 
@@ -231,7 +253,17 @@ A compiled word is at least four cells long:
 
 The first, the Link Field Address, points to the LFA of the previously defined word (or -1) if it's the first. The second cell is the word name as a string. Third is flags, which in this implementation *is* an eight bit byte. Lastly, we have the Code Field Address, which holds a pointer to a host-language native function that does the work.
 
-More cells may be used as "parameters", data to be used by the function in the CFA. For a constant or variable, this would be the actual value stored. For a defined word, it would be a list of CFAs for the words compiled into this word.
+Currently, there are three possible flags:
+
+```
++--------------+----------------+------+--------+-----------+
+| (8-? unused) | (5-7 reserved) | step | smudge | immediate |
++--------------+----------------+------+--------+-----------+
+```
+
+Immediate (0x01) indicates that the word should be executed even when compiling. The `immediate` word sets this bit. Smudge (0x02) is not used yet, but when available, will provide recursion capabilities. Step (0x04) indicates that the word should be executed in single steps for debugging. Use the `step` word to toggle this setting.
+
+Additional cells may be used as "parameters", data to be used by the function in the CFA. For a constant or variable, this would be the actual value stored. For a defined word, it would be a list of CFAs for the words compiled into this word.
 
 Here's a word called `star`. It prints out a single asterisk character:
 
@@ -301,6 +333,38 @@ A dump is all right, but wouldn't be nicer if the system could just show you the
 ```
 
 The `stars` word is a bit more interesting than `star` example in the section on dump. You can see where literal values (0 for loop index and 1 for loop increment) are compiled in. You'll also perhaps see special words with names in parentheses (the parentheses are part of the word name) that are only used in compiled definitions.
+
+## Debugging
+
+Yep, you read that right. fcomp has a debugger. Not very fancy, but it can be pretty useful. Especially if you're leaving wierd stuff on the stack or not handling what is there correctly... (This has *never* happened to me, of course.) To single step through a word, say `step WORDNAME`. The next time you invoke the word, fcomp will print a message that stepping has started and for each cycle through `doword()`, it will print the current IP, the state of the parameter and return stacks, and the word it's about to execute. Press `[enter]` to continue for each step.
+
+```
+> : star 42 emit ;
+ ok
+> step star
+ ok
+> star
+-- Stepping star...
+   IP 356 : [] : [-1] : (literal) > 
+   IP 358 : [42] : [-1] : emit > 
+* ok
+```
+
+Above, you can see the word `star` being defined, then marked for stepping, and finally invoked. The system prints a message to show that it's entered the word to be stepped. The first item printed shows an IP location of 356, an empty parameter stack and return stack (we don't care so much what's on it as long as it stays balanced). The item at the end of the line is the name of the compiled word about to be executed. In this case, it's `(literal)`, because the definition of `star` compiled in the number 42.
+
+Sure enough, on the next instruction, we can see that the IP is 2 cells past 356 (because it had to skip over the compiled literal) and the next word to be executed is `emit`. After that, the asterisk is displayed, and `star` exits. 
+
+Because `star` has been marked for debugging, if you call it in a loop, you'll get that many chances to step through it: `: stars 0 do star loop ;`.
+
+You can also mark multiple words for debugging with separate invocations of `step`. If you invoke `step` on a word you've already marked, it will toggle single-step off for that word. Also, if you `see` (decompile) a word marked for debugging, it will show a flag set in binary digit position 2 (`0b0100`, or 4):
+
+```
+> see star
+0352 : <- 0328 | WORD star | 00000100
+0356 : 0123 - (literal)
+0357 : 42
+0358 : 0015 - emit
+```
 
 ## How Threaded Execution Works
 

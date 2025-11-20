@@ -36,9 +36,6 @@ code("*",      lambda : S.push(S.pop() * S.pop()))    # ( a b -- product)
 code("=",      lambda : S.push(S.pop() == S.pop()))   # ( a b -- f)
 code("<",      lambda : S.push(S.pop() > S.pop()))    # ( a b -- f)
 code(">",      lambda : S.push(S.pop() < S.pop()))    # ( a b -- f)
-code("0=",     lambda : S.push(S.pop() == 0))         # ( a -- f)
-code("0<",     lambda : S.push(0 < S.pop()))          # ( a -- f)
-code("0>",     lambda : S.push(S.pop() > 0))          # ( a -- f)
 code("not",    lambda : S.push(not S.pop()))          # ( a -- f)
 code("and",    lambda : S.push(S.pop() and S.pop()))  # ( a b -- f)
 code("or",     lambda : S.push(S.pop() or S.pop()))   # ( a b -- f)
@@ -82,10 +79,6 @@ def xquote():
     S.push(34); xword()
     if 1 == fvget("state"): literalize()
 code('"', xquote, 1)
-def xdotquote(): "( --) Print string."; xquote(); print(S.pop(), end="")
-code('."', xdotquote)
-def xcomment(): "( --) Read up to close paren."; S.push(41); xword(); S.pop()
-code("(", xcomment, 1)
 
 def doliteral():  # Inside definitions only, pushes compiled literal to stack.
     global IP
@@ -306,8 +299,13 @@ def doword():
     "Execute word definition."
     global IP, W
     R.push(IP)
+    stepping = RAM[W - 1] & 0x04
+    if stepping:
+        print(f"-- Stepping {RAM[W - 2]}...")
     IP = W + 1
     while -1 != RAM[IP]:  # Inner interpreter...
+        if stepping:
+            input(f"   IP {IP:2} : {repr(S)} : {repr(R)} : {RAM[RAM[IP] - 2]} > ")
         W = RAM[IP]
         IP += 1
         RAM[W]()
@@ -325,6 +323,11 @@ def xsemi():
 code(";", xsemi, 1)
 def ximmediate(): " ( --) Make most recent word immediate."; RAM[LAST + 2] |= 1
 code("immediate", ximmediate)
+def xstep():
+    "( $word --) Toggle step debugging for $word."
+    xtick()
+    RAM[S.pop() - 1] ^= (1<<2)
+code("step", xstep)
 
 def xinterpret():
     "( string --) Execute word."
@@ -333,7 +336,7 @@ def xinterpret():
     xfind()
     flag = S.pop()
     immediate = (not state) or 1 == flag
-    if 0 != flag:
+    if flag & 0x1:
         xt = S.pop()
         if immediate:
             W = xt
@@ -445,10 +448,26 @@ def quit():
     while True:
         if evaluate(input("> ")): print(" ok")
 
-# This allows for defining words using the interpreter.        
+# Elective Words
 evaluate("""
-: ? ( a -- v) @ . ;
-: leave ( --) i' r> drop >r ;  ( Leave loop early -- doesn't quite work yet.)
+: (  41 word drop ;  immediate          ( Now we can have comments!)
+: over  ( x y -- x y x)  >r dup r> swap ;
+: rot  ( x y z -- y z x)  >r swap r> swap ;
+: ?dup  ( n -- n | n n)  dup if dup then ;
+: 2dup  ( x y -- x y x y)  >r dup  r> swap over ;
+: 0=  ( n -- f)  0 = ;
+: 0<  ( n -- f)  0 > ;
+: 0>  ( n -- f)  0 < ;
+: 1+  ( n -- n+1)  1 + ;
+: 1-  ( n -- n-1)  1 - ;
+: max  ( x y -- x | y)  2dup  < if swap then  drop ;
+: min  ( x y -- x | y)  2dup  > if swap then  drop ;
+: ?  ( a -- v)  @ . ;                 ( Print variable value.)
+: +!  ( n a --)  dup >r  @ +  r> ! ;  ( Add n to variable at a.)
+: leave  ( --)  r> r> drop i >r >r ;  ( Leave do/loop early.)
+: space  ( --)  32 emit ;             ( Type single space.)
+: spaces  ( n --)  0 do space loop ;  ( Type n spaces.)
+: ."  ( string | --)  34 word . ;     ( Print string enclosed in parens.)
 """)
 
 if "__main__" == __name__:

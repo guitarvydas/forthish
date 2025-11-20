@@ -40,8 +40,8 @@ implementation.</p>
 <table>
 <colgroup>
 <col style="width: 7%" />
-<col style="width: 18%" />
-<col style="width: 74%" />
+<col style="width: 22%" />
+<col style="width: 70%" />
 </colgroup>
 <thead>
 <tr>
@@ -100,6 +100,26 @@ implementation.</p>
 <td>”</td>
 <td>( –)</td>
 <td>Read to close quote, push on stack (or compile) as string.</td>
+</tr>
+<tr>
+<td>over</td>
+<td>( x y – x y z)</td>
+<td>Copy second on stack to TOS.</td>
+</tr>
+<tr>
+<td>rot</td>
+<td>( x y z – y z x)</td>
+<td>Rotate top three items on stack.</td>
+</tr>
+<tr>
+<td>?dup</td>
+<td>( n – n (n))</td>
+<td>Duplicate TOS if true.</td>
+</tr>
+<tr>
+<td>2dup</td>
+<td>( x y – x y x y)</td>
+<td>Duplicate two entries on stack.</td>
 </tr>
 </tbody>
 </table>
@@ -193,6 +213,26 @@ implementation.</p>
 <td>( – pi)</td>
 <td>Constant for value of pi.</td>
 </tr>
+<tr>
+<td>1+</td>
+<td>( n – n+1)</td>
+<td>Increment TOS.</td>
+</tr>
+<tr>
+<td>1-</td>
+<td>( n – n-1)</td>
+<td>Decrement TOS.</td>
+</tr>
+<tr>
+<td>max</td>
+<td>( x y – max)</td>
+<td>Get maximum of top two entries.</td>
+</tr>
+<tr>
+<td>min</td>
+<td>( x y – min)</td>
+<td>Get minimum of two two entries.</td>
+</tr>
 </tbody>
 </table>
 <h2 id="conditionals-and-loops">Conditionals and Loops</h2>
@@ -251,6 +291,11 @@ implementation.</p>
 <td>( inc –)</td>
 <td>Close counted loop, increments loop index with inc.</td>
 </tr>
+<tr>
+<td>leave</td>
+<td>( –)</td>
+<td>Exit do/loop early.</td>
+</tr>
 </tbody>
 </table>
 <h2 id="control-and-io">Control and I/O</h2>
@@ -289,18 +334,28 @@ implementation.</p>
 <td>Print value.</td>
 </tr>
 <tr>
+<td>space</td>
+<td>( –)</td>
+<td>Print single space.</td>
+</tr>
+<tr>
+<td>spaces</td>
+<td>( n –)</td>
+<td>Print n spaces.</td>
+</tr>
+<tr>
 <td>.”</td>
 <td>( –)</td>
 <td>Read to close quote and print immediately.</td>
 </tr>
 <tr>
 <td>blk</td>
-<td></td>
+<td>( – a)</td>
 <td>Variable, current loaded block number.</td>
 </tr>
 <tr>
 <td>buffer</td>
-<td></td>
+<td>( – a)</td>
 <td>Variable, current block.</td>
 </tr>
 <tr>
@@ -380,6 +435,11 @@ e.g. <code>( $name --)</code>.</p>
 <td>word</td>
 <td>( char – string)</td>
 <td>Read in string delimited by char.</td>
+</tr>
+<tr>
+<td>step</td>
+<td>( $name –)</td>
+<td>Mark word $name for step debugging.</td>
 </tr>
 <tr>
 <td>?</td>
@@ -564,6 +624,11 @@ e.g. <code>( $name --)</code>.</p>
 <td>( a – n)</td>
 <td>Retrieve n from address a.</td>
 </tr>
+<tr>
+<td>+!</td>
+<td>( n a –)</td>
+<td>Add n to value in a.</td>
+</tr>
 </tbody>
 </table>
 <h2 id="fragments">Fragments</h2>
@@ -645,8 +710,18 @@ definition and returns to regular interpretation.</p>
 <h1 id="immediate-words">Immediate Words</h1>
 <p><em>Left blank because writer needs sleep.</em></p>
 <h1 id="under-the-hood">Under the Hood</h1>
-<p>%fcomp.py is effectively a DTC (Direct Threaded Code)
-implementation.</p>
+<p>Some information about the internals. You can definitely skip this on
+first read…</p>
+<p>If you’re comparing it to another implementation, you can think of
+%fcomp.py as DTC (Direct Threaded Code).</p>
+<h2 id="elective-words">Elective Words</h2>
+<p>To bootstrap this implementation, a number of words are implemented
+as host language functions (the CODEWORDs). However, not everything – at
+the bottom of the fcomp file, you’ll find the “elective” words
+implemented directly in Forth, in a big string that gets
+<code>evaluate</code>d. Note, among other things, this is where paren
+comments are defined.</p>
+<h2 id="compiling">Compiling</h2>
 <p>The words are stored as elements in an array named <code>RAM</code>.
 I call each element a “cell”. This mimics an old-skool Forth using
 contiguous memory – except a modern array can store elements of any
@@ -664,7 +739,17 @@ the word name as a string. Third is flags, which in this implementation
 <em>is</em> an eight bit byte. Lastly, we have the Code Field Address,
 which holds a pointer to a host-language native function that does the
 work.</p>
-<p>More cells may be used as “parameters”, data to be used by the
+<p>Currently, there are three possible flags:</p>
+<pre><code>+--------------+----------------+------+--------+-----------+
+| (8-? unused) | (5-7 reserved) | step | smudge | immediate |
++--------------+----------------+------+--------+-----------+</code></pre>
+<p>Immediate (0x01) indicates that the word should be executed even when
+compiling. The <code>immediate</code> word sets this bit. Smudge (0x02)
+is not used yet, but when available, will provide recursion
+capabilities. Step (0x04) indicates that the word should be executed in
+single steps for debugging. Use the <code>step</code> word to toggle
+this setting.</p>
+<p>Additional cells may be used as “parameters”, data to be used by the
 function in the CFA. For a constant or variable, this would be the
 actual value stored. For a defined word, it would be a list of CFAs for
 the words compiled into this word.</p>
@@ -741,6 +826,51 @@ literal values (0 for loop index and 1 for loop increment) are compiled
 in. You’ll also perhaps see special words with names in parentheses (the
 parentheses are part of the word name) that are only used in compiled
 definitions.</p>
+<h2 id="debugging">Debugging</h2>
+<p>Yep, you read that right. fcomp has a debugger. Not very fancy, but
+it can be pretty useful. Especially if you’re leaving wierd stuff on the
+stack or not handling what is there correctly… (This has <em>never</em>
+happened to me, of course.) To single step through a word, say
+<code>step WORDNAME</code>. The next time you invoke the word, fcomp
+will print a message that stepping has started and for each cycle
+through <code>doword()</code>, it will print the current IP, the state
+of the parameter and return stacks, and the word it’s about to execute.
+Press <code>[enter]</code> to continue for each step.</p>
+<pre><code>&gt; : star 42 emit ;
+ ok
+&gt; step star
+ ok
+&gt; star
+-- Stepping star...
+   IP 356 : [] : [-1] : (literal) &gt; 
+   IP 358 : [42] : [-1] : emit &gt; 
+* ok</code></pre>
+<p>Above, you can see the word <code>star</code> being defined, then
+marked for stepping, and finally invoked. The system prints a message to
+show that it’s entered the word to be stepped. The first item printed
+shows an IP location of 356, an empty parameter stack and return stack
+(we don’t care so much what’s on it as long as it stays balanced). The
+item at the end of the line is the name of the compiled word about to be
+executed. In this case, it’s <code>(literal)</code>, because the
+definition of <code>star</code> compiled in the number 42.</p>
+<p>Sure enough, on the next instruction, we can see that the IP is 2
+cells past 356 (because it had to skip over the compiled literal) and
+the next word to be executed is <code>emit</code>. After that, the
+asterisk is displayed, and <code>star</code> exits.</p>
+<p>Because <code>star</code> has been marked for debugging, if you call
+it in a loop, you’ll get that many chances to step through it:
+<code>: stars 0 do star loop ;</code>.</p>
+<p>You can also mark multiple words for debugging with separate
+invocations of <code>step</code>. If you invoke <code>step</code> on a
+word you’ve already marked, it will toggle single-step off for that
+word. Also, if you <code>see</code> (decompile) a word marked for
+debugging, it will show a flag set in binary digit position 2
+(<code>0b0100</code>, or 4):</p>
+<pre><code>&gt; see star
+0352 : &lt;- 0328 | WORD star | 00000100
+0356 : 0123 - (literal)
+0357 : 42
+0358 : 0015 - emit</code></pre>
 <h2 id="how-threaded-execution-works">How Threaded Execution Works</h2>
 <p><em>More to come…</em></p>
 <h1 id="colophon">Colophon</h1>
