@@ -1,12 +1,25 @@
-defsubr code (name, does) {
-    ⌈ ( name does /flags/ --) Add new word to RAM dictionary. ⌉
-    flags = 0
+@dataclass
+class [Word](word.png) {
+    link
+    name
+    code
+    flags
+    parameter
+    }
+
+deffunction code (name, flags, does, p) {
+    ⌈ Add new word to RAM dictionary. We create a word (Forth "object") in RAM with 5 fields and extend the
+      the dictionary by linking back to the head of the dictionary list ⌉
     x = len (State.RAM)
-    State.RAM.append (State.LAST)
-    State.RAM.append (name)
-    State.RAM.append (flags)
-    State.RAM.append (does)
-    State.LAST = x
+
+    State.RAM.append (State.LAST) ⌈ (LFA) link to previous word in dictionary list ⌉
+    State.RAM.append (name)       ⌈ (NFA) name of word ⌉
+    State.RAM.append (flags)      ⌈       0 = normal word, 1 = immediate word ⌉
+    State.RAM.append (does)       ⌈ (CFA) function pointer that points to code that executes the word ⌉
+    State.RAM.append (p)          ⌈ (PFA) private data ('p' for 'parameter') ⌉
+
+    State.LAST = x                ⌈ LAST is the pointer to the head of the dictionary list, set it to point to
+                                      this new word ⌉
 
 defsubr xdrop {
     ⌈ ( a -- ) ⌉
@@ -168,7 +181,7 @@ defsubr xquote {
     @xword
     [ %inCompilationState
         | yes: %funcall literalize ()
-	| no: %pass
+        | no: %pass
     ]
 }
 
@@ -189,13 +202,270 @@ defsubr xcomment {
     %pop
 }
 
+
 defsubr xdoliteral {
-    ⌈ Inside definitions only, pushed comiled literal to stack ⌉
-
-
+    ⌈ Inside definitions only, pushes compiled literal to stack ⌉
     
+    ⌈ Certain Forth words are only applicable inside compiled sequences of subroutines ⌉
+    ⌈ Literals are handled in different ways when interpreted when in the REPL vs
+    ⌈ compiled into sequences of subrs ⌉
+    ⌈ In the REPL, when we encounter a literal, we simply push it onto the stack ⌉
+    ⌈ In the compiler, though, we have to create an instruction that pushes 
+    ⌈   the literal onto the stack. ⌉
+    ⌈   Compiled code doesn't do what the REPL does, we have to hard-wire and ⌉
+    ⌈   bake in code that pushes the literal when the time comes to run the sequence. ⌉
+
+    ⌈ This word - "(literal)" - is a simple case and one could actually type this ⌉
+    ⌈   instruction into the REPL, but, that would be redundant.  Other kinds of words, ⌉
+    ⌈   e.g. some control-flow words, tend to be messier and the code below only handles ⌉
+    ⌈   the compiled aspects and ignores the REPL aspects ⌉
+
+    ⌈ "IP" is the current word index in a sequence of words being compiled. ⌉
+    defsynonym lit ≡ RAM [IP]
+    %push (lit)
+    %incIP ⌈ move past this item (the literal) - we're done with it ⌉
+}
+
+defsubr literalize {
+    deftemps found, address ⇐ %lookup ("(literal)")
+    %ignore (found)
+    RAM.append (address)
+    RAM.append (%pop)
+}
+
+defsubr xbranch {
+    ⌈ This instruction appears only inside subroutine sequences, jump to address in next cell ⌉
+    ⌈ This instruction is inserted into a subr sequence when compiling control-flow words, like "else" see below) ⌉
+    IP ⇐ RAM [IP]
+    ⌈ normally, we just execute an instruction then move the IP sequentially forward by 1 unit, i.e. IP ⇐ IP + 1 ⌉
+    ⌈   in this case, though, we explicitly change the IP to some other value and don't just increment it ⌉
+}
+
+defsubr x0branch {
+    ⌈ This instruction appears only inside subroutine sequences, jump on false to address in next cell ⌉
+    deftemp test ⇐ %toboolean (%pop)
+    if (test) {
+        %incIP
+    } else {
+        IP ⇐ RAM [IP]
+    }
+}
+
+
+⌈ "immediate" words are fully operational even when in compile mode. Some (not all) of these words are meant to
+    work /only/ in compile mode. At the REPL prompt ("interpret" mode), they produce unwanted results.
+  immediate words: xif, xelse, xthen, xquote, xcomment, xsemi
+  immediate words that only have meaning in compile mode: xif, xelse, xthen, xsemi
+⌉
+
+
+⌈ IF, ELSE and THEN are "immediate" words - they should only be used inside of ":" (colon compiler) ⌉
+
+⌈ see diagram `compiling-IF-THEN.drawio.png` ⌉
+defsubr xif {
+    %immediate ⌈ This instruction appears only inside subroutine sequences, ( f -- ) compile if test and branchFalse ⌉
+    ⌈ Step. 1: generate conditional branch to yet-unknown target1 ⌉
+    deftemps found, branchFalseAddress ⇐ %lookup ("0branch")
+    %ignore (found)
+    RAM.append (branchFalseAddress) ⌈ insert branch-if-false opcode (word) ⌉
+    %rpush (%RAMnext) ⌈ target1 onto r-stack as memo for later fixup ⌉
+    defsynonym target1 ≡ -1
+    RAM.append (target1) ⌈ branch target will be fixed up later ⌉
+    ⌈ Step. 2: generate code for true branch - return to compiler which will compile the following words ⌉
+    ⌈ THEN or ELSE will do the fixup of target1 ⌉
+}
+
+⌈ see diagram `compiling-IF-ELSE-THEN.drawio.png` ⌉
+defsubr xelse {
+    %immediate
+    ⌈ Step. 1: fixup target1 from IF-true, retrieving memo from R-stack ⌉
+    deftemp target1 ⇐ %rpop
+    RAM [target1] ⇐ %RAMnext
+    ⌈ Step. 2: generate unconditional branch for preceding IF, creating new memo for target2 on R-stack ⌉
+    deftemps found, brAddress ⇐ %lookup ("branch")
+    %rpush (%RAMnext) ⌈ target2 address on R-stack as memo for later fixup ⌉
+    defsynonym target2 ≡ -1
+    RAM.append (target2) ⌈ branch target will be fixed up later ⌉
+    ⌈ Step. 3: generate code for false branch - return to compiler which will compile the following words ⌉
+    ⌈ THEN will do the fixup of target2 ⌉
+}
+
+⌈ see diagrams `compiling-IF-THEN.drawio.png` and `compiling-IF-ELSE-THEN.drawio.png` ⌉
+defsubr xthen {
+    %immediate
+    ⌈ Step. 1: fixup target (from IF or from ELSE, above), retrieving memo from R-stack ⌉
+    deftemp target ⇐ %rpop
+    RAM [target] ⇐ %RAMnext
+}
+
+
+⌈  "... 123 constant K ..." ⌉
+⌈  at interpretation time: 123 is on the Stack, we have consumed "constant" from BUFF, BUFF now contains "K ..." ⌉
+⌈  invoke 'word' which parses "K" and pushed it. The stack becomes [... 123 "K"] ⌉
+⌈  pop "K", pop 123, create a new word called 'K' with its PFA set to 123 and its CFA set to a subr that
+     gets 123 from its PFA and pushes it onto the stack ⌉
+defsubr xconst {
+    ⌈  get next word - the name - from BUFF ⌉
+    defsynonym blank ≡ 32
+    %push (blank)
+    @word
+    ⌈  stack is now: ( NNNN name -- ) ⌉
+    deftemp name ⇐ %pop
+    deftemp value ⇐ %pop
+    defsynonym normal ≡ 0
+    deftemp fobj ⇐ %funcall code (name, normal, ↪︎doconst)
+    %fobjappend (fobj, value)
+}
+defsubr doconst {  ⌈ method for const ⌉
+    defsynonym parameter ≡ RAM [W + 1]
+    %push (parameter)
+}
+
+
+defsubr docreate {
+    defsynonym parameterAddress ≡ len (RAM) + 4
+    %push (parameterAddress)
+}
+deffunction create (name) {
+    defsynonym normal ≡ 0
+    %funcall code (name, normal, ↪︎docreate)
+}
+defsubr xcreate {
+    defsynonym blank ≡ 32
+    %push (blank)
+    @word
+    deftemp name ⇐ %pop
+    %funcall create (name)
+}
+
+deffunction comma (value) {
+    RAM.append (value)
+}
+
+deffunction fvar (name, value) {
+    %funcall create (name)
+    %funcall comma (value)
+}
+
+defsubr xvar {
+    defsynonym blank ≡ 32
+    %push (blank)
+    @word
+    deftemp name ⇐ %pop
+    deftemp value ⇐ %pop
+    %funcall fvar (name, value)    
+}
+
+defsubr xdump {
+    deftemp n ⇐ %toint (%pop)
+    deftemp start ⇐ %toint (%pop)
+    %print ("----------------------------------------------------------------")
+    deftemp a ⇐ start
+    while (a < start + min (n, (len (RAM) - start))) {
+        %print (a)
+	%print (": ")
+	%print (RAM [a])
+	%eol
+        deftemp a ⇐ a + 1
+    }
+}
+
+defsubr xstore {
+    deftemp b ⇐ %pop
+    deftemp a ⇐ %pop
+    RAM [b] ⇐ a
+}
 
 defsubr xbye { ⌈ ( --) Leave interpreter ⌉ %quit }
+
+
+defunction _find(name) {
+    ⌈ "( name -- cfa|0) Find CFA of word name." ⌉
+    deftemp x ⇐ LAST
+    while (x >= 0) {
+        ⌈ ## print(f"-- {x} : {RAM[x]}, {RAM[x + 1]}")  # Debug. ⌉
+        if (name = RAM[x + 1]) {  ⌈ # Match! ⌉
+            return x + 3
+        } else {
+            x ⇐ RAM[x]  ⌈ # Get next link. ⌉
+	}
+    }
+    return 0  ⌈ # Nothing found. ⌉
+}
+
+def xfind() {
+    ⌈ "( name | -- name 0|xt 1|xt -1) Search for word name." ⌉
+    %push (32)
+    @xword
+    deftemp found ⇐ %funcall _find(S[-1])
+    if (0 = found) {
+        %push (0)
+    } else {
+        %pop  ⌈ # Get rid of name on stack. ⌉
+        %push(found)
+        deftemp immediate ⇐ -1
+        if (RAM[S[-1] - 1] & 1) { immediate ⇐ 1 }
+        %push(immediate)
+    }
+}
+
+def xtick():
+    ⌈ "( name -- xt|-1) Search for execution token of word name." ⌉
+    %push (32)
+    @xword
+    deftemp name ⇐ %pop
+    deftemp found ⇐ %funcall _find(name)
+    %push (found)
+}
+
+⌈ fvget and fvset assume that the forth object (word) is a set of contiguous slots, each 1 machine word wide
+  these functions use direct integer offsets to access the fields of the fojbect, whereas in higher level languages
+  we'd use class fields instead - todo: fix this in the future (or not? at what point is customization better than
+  generalization?) ⌉
+deffunction fvget (name) {
+    deftemp fobjaddress ⇐ %funcall _find(S.pop())
+    return RAM [fobjaddress + 1]
+}
+
+deffunction fvset (name, v) {
+    deftemp fobjaddress ⇐ %funcall _find(S.pop())
+    defsynonym namefieldaddess ≡ fobjaddress + 1
+    RAM [namefieldaddress] = v
+}
+
+
+defsubr xwords {
+    ⌈ print words in dictionary ⌉
+    deftemp x ⇐ LAST
+    while (x > -1) {
+        %print (RAM [x+ 1])
+	%print (" ")
+    }
+    %eol
+}
+
+
+defsubr xexecute {
+    ⌈ invoke given word ⌉
+    deftemp wordAddress ⇐ %pop
+    @@wordAddress
+}
+
+=======================
+
+defsubr doword {
+    %rpush (IP)
+    ⌈ at first, both, IP and W point to the indirect address of a subr,
+      e.g. a raw native implementation of a subr or a native helper function like
+      "doword" (this subr) or "doconst", etc.
+      This subr ("doword") walks through a list of subrs (a "threaded" Forth word) and
+      invokes each one. During walking, 'W' is incremented, 
+
+}
+
+
+
+
 
 ⌈ Example of state-smart word, which Brodie sez not to do. Sorry, Leo... ⌉
 ⌈ This sin allows it to be used the same way compiling or interactive. ⌉
@@ -218,7 +488,6 @@ defsubr xcomment {
     ⌈ ( --) Read up to close paren. ⌉
 }
 
-=======================
 
 def doliteral {
     ⌈ Inside definitions only, pushes compiled literal to stack. ⌉
@@ -237,17 +506,17 @@ defsubr xinterpret {
     if %empty-string? (word) {
         pass
     } else {
-	deftemps found, subr ⇐ %lookup (subrs, word)
-	if found {
-	    @subr
-	} elif %digits? (word) {
-	    deftemp i ⇐ %toint (word)
-	    %push (i)
-	} else {
-	    %print (word)
-	    %print ("?")
-	    %eol
-	}
+        deftemps found, subr ⇐ %lookup (subrs, word)
+        if found {
+            @subr
+        } elif %digits? (word) {
+            deftemp i ⇐ %toint (word)
+            %push (i)
+        } else {
+            %print (word)
+            %print ("?")
+            %eol
+        }
     }
 }
 
@@ -265,12 +534,12 @@ defsubr ok {
     ⌈ ( --) Interaction loop -- REPL ⌉
     defsynonym blank ≡ 32
     while ⊤ {
-	%input
-	while not %empty-input {
-	    %push (blank)
-	    @xword
-	    @xinterpret
-	}
+        %input
+        while not %empty-input {
+            %push (blank)
+            @xword
+            @xinterpret
+        }
     }
 }
 

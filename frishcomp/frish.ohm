@@ -30,6 +30,7 @@ frish {
      | WhileStatement  -- while
      | Synonym -- synonym
      | Assignment -- assignment
+     | "@@" Lval Rec_Statement? -- callindirect
      | "@" Lval Rec_Statement? -- call
      | line Rec_Statement? -- line
    CommaIdent = Comma ident
@@ -59,6 +60,9 @@ frish {
      | "%rpush" "(" Exp ")" -- rpush
      | "%rtop" -- rtop
      | "%rthird" -- rthird
+
+     | "%toboolean" "(" Exp ")" -- toboolean
+     | "%ignore" "(" ident ")" -- ignore
 
      | "%" #ident Args? -- unrecognized
 

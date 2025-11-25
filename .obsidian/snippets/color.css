@@ -1,0 +1,12 @@
+.workspace-ribbon.side-dock-ribbon {
+    background-color: #30ac9e !important;
+}
+
+body {
+  --h1-color: #7fbbb3;
+  --h2-color: #ff0000;
+  --h3-color: #a7c080;
+  --h4-color: #dbbc7f;
+  --h5-color: #e69875;
+  --h6-color: #e67e80;
+}
