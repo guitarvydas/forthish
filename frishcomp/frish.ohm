@@ -5,13 +5,16 @@ frish {
     | Defvar -- defvar
     | Defsynonym -- defsynonym
     | Defsubr -- defsubr
+    | Deffunction -- deffunction
     | Defobj -- defobj
     | Builtin -- builtin
+    | Call -- call
     | comment line? -- comment
     | line -- line
 
    Defvar = "defvar" Lval "⇐" Exp line?
    Defsubr = "defsubr" ident StatementBlock line?
+   Deffunction = "deffunction" ident Formals StatementBlock line?
    Defobj = "defobj" ident ObjFormals? line? "{" line? InitStatement+ "}" line?
 
    StatementBlock = line? "{" line? Rec_Statement line? "}" line?
@@ -31,9 +34,11 @@ frish {
      | Synonym -- synonym
      | Assignment -- assignment
      | "@@" Lval Rec_Statement? -- callindirect
-     | "@" Lval Rec_Statement? -- call
-     | line Rec_Statement? -- line
+     | Call -- call
+     | spaces #comment? line Rec_Statement? -- line
    CommaIdent = Comma ident
+
+   Call = "@" Lval Rec_Statement?
 
    Builtin = BuiltinPhrase line?
    BuiltinPhrase =
@@ -51,7 +56,6 @@ frish {
      | "%quit" -- quit
      | "%stack" -- stack
      | "%freshdict" -- freshdict
-     | "%exec" ident -- exec
      | "%digits?" "(" Exp ")" -- isdigits
      | "%toint" "(" Exp ")" -- toint
      | "%input" -- input
@@ -63,6 +67,10 @@ frish {
 
      | "%toboolean" "(" Exp ")" -- toboolean
      | "%ignore" "(" ident ")" -- ignore
+
+     | "%funcall" Primary Actuals -- funcall
+
+     | "%inCompilationState" -- incompilationstate
 
      | "%" #ident Args? -- unrecognized
 
@@ -128,7 +136,6 @@ frish {
       | Primary -- basic
 
     Primary =
-      | PrimaryIndexed Actuals -- call
       | PrimaryIndexed -- plain
 
     PrimaryIndexed =
@@ -152,7 +159,6 @@ frish {
       | "⊥" -- false
       | Subraddress -- subraddress
       | "range" "(" Exp ")" -- range
-      | ident Actuals -- callident
       | string -- string
       | number -- number
       | ident -- ident
@@ -197,6 +203,7 @@ frish {
     | "and" -- and
     | "or" -- or
     | "in" -- in
+    | "&" -- bitwiseand
 
   boolOp = (boolEq | boolNeq | "<=" | ">=" | ">" | "<")
   boolEq = "="
@@ -216,6 +223,7 @@ frish {
       | "defobj"
       | "defvar"
       | "defsubr"
+      | "deffunction"
       | "pass"
       | "return"
       | "if"

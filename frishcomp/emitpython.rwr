@@ -96,12 +96,20 @@ BuiltinPhrase_freshdict [_] = ‛{}’
 BuiltinPhrase_exec [_ f] = ‛«f»()’
 BuiltinPhrase_isdigits [_ lp exp rp] = ‛«exp».isdigit()’
 BuiltinPhrase_toint [_ lp exp rp] = ‛int («exp»)’
+BuiltinPhrase_tofloat [_ lp exp rp] = ‛float («exp»)’
+
+BuiltinPhrase_clearS [_] = ‛\nState.S.clear()’
+BuiltinPhrase_clearR [_] = ‛\nState.R.clear()’
+
+BuiltinPhrase_pushNone [_] = ‛\nState.S.append (None)’
 
 BuiltinPhrase_rpop [_] = ‛State.R.pop ()’
 BuiltinPhrase_rtop [_] = ‛State.R [-1]’
 BuiltinPhrase_rthird [_] = ‛State.R [-3]’
 BuiltinPhrase_rpush [_ lp exp rp] = ‛State.R.append («exp»)’
 
+BuiltinPhrase_isInteger [_ lp exp rp] = ‛re.match(r"^-?\d*$", word)’
+BuiltinPhrase_isFloat [_ lp exp rp] = ‛re.match(r"^-?\d*\.?\d*$", word)’
 
 BuiltinPhrase_input [_] = ‛
 State.BUFF = input("OK ")

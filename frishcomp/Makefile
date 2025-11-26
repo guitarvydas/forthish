@@ -7,3 +7,4 @@ main:
 	@if [ -f out.✗ ]; then \
 	  cat out.✗; \
 	fi
+

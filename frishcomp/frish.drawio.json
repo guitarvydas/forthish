@@ -13,6 +13,14 @@
       {
         "name": "Pre Optimize",
         "id": 17
+      },
+      {
+        "name": "trash",
+        "id": 21
+      },
+      {
+        "name": "trash",
+        "id": 23
       }
     ],
     "connections": [
@@ -27,6 +35,19 @@
       },
       {
         "dir": 1,
+        "source_port": "0",
+        "target_port": "",
+        "source": {
+          "name": "Generate Python",
+          "id": 8
+        },
+        "target": {
+          "name": "trash",
+          "id": 21
+        }
+      },
+      {
+        "dir": 1,
         "source_port": "",
         "target_port": "",
         "source": {
@@ -52,12 +73,16 @@
         }
       },
       {
-        "dir": 2,
-        "source_port": "0",
-        "target_port": "0.py",
+        "dir": 1,
+        "source_port": "",
+        "target_port": "",
         "source": {
-          "name": "Generate Python",
-          "id": 8
+          "name": "Pre Optimize",
+          "id": 17
+        },
+        "target": {
+          "name": "trash",
+          "id": 23
         }
       },
       {
@@ -82,15 +107,6 @@
         "dir": 2,
         "source_port": "✗",
         "target_port": "✗",
-        "source": {
-          "name": "Pre Optimize",
-          "id": 17
-        }
-      },
-      {
-        "dir": 2,
-        "source_port": "",
-        "target_port": "1.frish",
         "source": {
           "name": "Pre Optimize",
           "id": 17

@@ -1,0 +1,8 @@
+Error: Line 222, col 6:
+  221 |     %push (lit)⎩221⎭
+> 222 |     %incIP ⌈ move past this item (the literal) - we're done with it ⌉⎩222⎭
+             ^
+  223 | }⎩223⎭
+Expected not a keyword
+
+grammar = "frish"

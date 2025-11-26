@@ -1,3 +1,0 @@
-#!/bin/bash
-make
-python3 out.1.py
