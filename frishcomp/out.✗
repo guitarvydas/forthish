@@ -1,14 +1,18 @@
-Error: Found errors in the action dictionary of the 'rwr' operation:
-- Semantic action 'R_Statement_call' has the wrong arity: expected 1, got 3
-- Semantic action 'R_Statement_line' has the wrong arity: expected 4, got 2
-- 'BuiltinPhrase_exec' is not a valid semantic action for 'frish'
-- 'BuiltinPhrase_tofloat' is not a valid semantic action for 'frish'
-- 'BuiltinPhrase_clearS' is not a valid semantic action for 'frish'
-- 'BuiltinPhrase_clearR' is not a valid semantic action for 'frish'
-- 'BuiltinPhrase_pushNone' is not a valid semantic action for 'frish'
-- 'BuiltinPhrase_isInteger' is not a valid semantic action for 'frish'
-- 'BuiltinPhrase_isFloat' is not a valid semantic action for 'frish'
-- 'Primary_call' is not a valid semantic action for 'frish'
-- 'Atom_callident' is not a valid semantic action for 'frish'
+missingSemanticAction: Missing semantic action for 'Call' in operation 'rwr'.
+Action stack (most recent call last):
+  rwr > Main
+  rwr > _iter
+  rwr > default action for 'TopLevel'
+  rwr > TopLevel_defsubr
+  rwr > Defsubr
+  rwr > StatementBlock
+  rwr > Rec_Statement
+  rwr > default action for 'R_Statement'
+  rwr > R_Statement_comment
+  rwr > _iter
+  rwr > Rec_Statement
+  rwr > default action for 'R_Statement'
+  rwr > R_Statement_call
+  rwr > Call
 
 grammar = "frish"

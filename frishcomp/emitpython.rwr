@@ -24,7 +24,8 @@ class StateClass:⤷
         self.IP = None
         self.W = None;
         self.BUFF = ""
-        self.BUFP = 0⤶⤶
+        self.BUFP = 0
+	self.compiling = False⤶⤶
 
 State = StateClass ()
 
@@ -42,13 +43,16 @@ def Lookup (dict, key):⤷
 TopLevel_defvar [ Defvar] =‛«Defvar»’
 TopLevel_defsynonym [ Defsynonym] =‛«Defsynonym»’
 TopLevel_defsubr [ Defsubr] =‛«Defsubr»’
+TopLevel_deffunction [ Deffn] =‛«Deffn»’
 TopLevel_defobj [ Defobj] =‛«Defobj»’
 TopLevel_builtin [x] =‛«x»’
+TopLevel_call [x] =‛«x»’
 TopLevel_comment [s line?] =‛\n«s»«line»’
 TopLevel_line [line] =‛«line»’
 
 Defvar [ __ lval _eq e line?] = ‛\n«lval» = «e»«line»’
 Defsubr [ _4 ident StatementBlock line?] = ‛\ndef «ident» ():⤷\nglobal State⤶«StatementBlock»«line»\n’
+Deffunction [ _4 ident formals StatementBlock line?] = ‛\ndef «ident» «formals»:⤷\nglobal State⤶«StatementBlock»«line»\n’
 Defobj [ _defobj ident Formals line1? lb line2? init+ rb line3?] = ‛\nclass «ident»:⤷\ndef __init__ (self,«Formals»):«line1»⤷«line2»«init»«line3»⤶⤶\n’
 StatementBlock [ line1? lb line2? Statement     line3? rb  line4?] = ‛«line1»«line2»⤷«Statement»«line3»«line4»⤶’
 
@@ -64,13 +68,14 @@ R_Statement_return [ _29 ReturnExp] =‛\nreturn «ReturnExp»’
 R_Statement_for [ ForStatement] =‛«ForStatement»’
 R_Statement_while [ WhileStatement] =‛«WhileStatement»’
 R_Statement_assignment [ Assignment] =‛«Assignment»’
-R_Statement_call [ _at Lval rec?] =‛\n«Lval»() «rec»’
-R_Statement_line [line rec?] = ‛«line»«rec»’
+R_Statement_callindirect [_ lval rec?] =‛«lval»()«rec»’
+R_Statement_call [c] =‛«c»’
+R_Statement_line [ws comment? line rec?] = ‛«ws»«comment»«line»«rec»’
 CommaIdent [_comma ident] = ‛, «ident»’
 
 Builtin [x line?] = ‛«x»«line»’
-BuiltinPhrase_pop [_] = ‛State.S.pop ()’
 BuiltinPhrase_popchar [_] = ‛chr(State.S.pop ())’
+BuiltinPhrase_pop [_] = ‛State.S.pop ()’
 BuiltinPhrase_push [_ lp exp rp] = ‛State.S.append («exp»)’
 BuiltinPhrase_scanfor [_ lp want rp] = ‛
     found = ""
@@ -93,28 +98,32 @@ BuiltinPhrase_emptystring [_ lp s rp] = ‛(not «s»)’
 BuiltinPhrase_quit [_] = ‛\nraise SystemExit’
 BuiltinPhrase_stack [_] = ‛State.S’
 BuiltinPhrase_freshdict [_] = ‛{}’
-BuiltinPhrase_exec [_ f] = ‛«f»()’
 BuiltinPhrase_isdigits [_ lp exp rp] = ‛«exp».isdigit()’
 BuiltinPhrase_toint [_ lp exp rp] = ‛int («exp»)’
 BuiltinPhrase_tofloat [_ lp exp rp] = ‛float («exp»)’
-
-BuiltinPhrase_clearS [_] = ‛\nState.S.clear()’
-BuiltinPhrase_clearR [_] = ‛\nState.R.clear()’
-
-BuiltinPhrase_pushNone [_] = ‛\nState.S.append (None)’
-
-BuiltinPhrase_rpop [_] = ‛State.R.pop ()’
-BuiltinPhrase_rtop [_] = ‛State.R [-1]’
-BuiltinPhrase_rthird [_] = ‛State.R [-3]’
-BuiltinPhrase_rpush [_ lp exp rp] = ‛State.R.append («exp»)’
-
 BuiltinPhrase_isInteger [_ lp exp rp] = ‛re.match(r"^-?\d*$", word)’
 BuiltinPhrase_isFloat [_ lp exp rp] = ‛re.match(r"^-?\d*\.?\d*$", word)’
-
 BuiltinPhrase_input [_] = ‛
 State.BUFF = input("OK ")
 State.BUFP = 0
 ’
+BuiltinPhrase_clearS [_] = ‛\nState.S.clear()’
+BuiltinPhrase_clearR [_] = ‛\nState.R.clear()’
+BuiltinPhrase_pushNone [_] = ‛\nState.S.append (None)’
+
+BuiltinPhrase_rpop [_] = ‛State.R.pop ()’
+BuiltinPhrase_rpush [_ lp exp rp] = ‛State.R.append («exp»)’
+BuiltinPhrase_rtop [_] = ‛State.R [-1]’
+BuiltinPhrase_rthird [_] = ‛State.R [-3]’
+
+BuiltinPhrase_toboolean [_ lp exp rp] = ‛bool («exp»)’
+BuiltinPhrase_ignore [_ lp exp rp] = ‛’
+
+BuiltinPhrase_funcall [_ f actuals] = ‛«f»«actuals»’
+BuiltinPhrase_incompilationstate [_] = ‛State.compiling’
+BuiltinPhrase_setcompilingstate [_] = ‛State.compiling = True’
+BuiltinPhrase_setnotcompilingstate [_] = ‛State.compiling = False’
+
 BuiltinPhrase_unrecognized [_ ident args?] = ‛«_» ⎝ error - unrecognized builtin (with given arguments) ⎠ «args» ’
 
 Args [lp stuff* rp] = ‛«lp»«stuff»«rp»’
@@ -163,7 +172,6 @@ MulExp_basic [ ExpExp] =‛«ExpExp»’
 ExpExp_power [ Primary _69 ExpExp] =‛«Primary»«_69»«ExpExp»’
 ExpExp_basic [ Primary] =‛«Primary»’
 
-Primary_call [p actuals] = ‛«p» «actuals»’
 Primary_plain [p] = ‛«p»’
 
 PrimaryIndexed_lookupident [p _slash key] = ‛«p» [«key»]’
@@ -175,6 +183,7 @@ PrimaryIndexed_nthslice [p lb ds+ _colon rb] = ‛«p» [«ds»:]’
 PrimaryIndexed_atom [a] = ‛«a»’
 
 Atom_builtin [x] = ‛«x»’
+Atom_call [c] = ‛«c»’
 Atom_emptylistconst [ _72 _73] =‛«_72»«_73»’
 Atom_emptydict [ _76 _77] =‛«_76»«_77»’
 Atom_paren [ _70 Exp _71] =‛«_70»«Exp»«_71»’
@@ -185,7 +194,6 @@ Atom_true [ _88] =‛ True’
 Atom_false [ _89] =‛ False’
 Atom_subraddress [x] = ‛«x»’
 Atom_range [ _91 _92 Exp _93] =‛«_91»«_92»«Exp»«_93»’
-Atom_callident [id actuals] = ‛«id» «actuals»’
 Atom_string [ string] =‛ «string»’
 Atom_number [ number] =‛ «number»’
 Atom_ident [ ident ] =‛ «ident»’
@@ -217,6 +225,7 @@ Pair [ string _161 Exp _162?] = ‛«string»«_161»«Exp»«_162»’
 andOrIn_and [op] = ‛ and ’
 andOrIn_or [op] = ‛ or ’
 andOrIn_in [op] = ‛ in ’
+andOrIn_bitwiseand [op] = ‛ & ’
 
 boolOp [ _191] = ‛ «_191» ’
 boolEq [op] = ‛==’

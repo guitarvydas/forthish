@@ -41,7 +41,8 @@ class StateClass:⤷
         self.IP = None
         self.W = None;
         self.BUFF = ""
-        self.BUFP = 0⤶⤶
+        self.BUFP = 0
+	self.compiling = False⤶⤶
 
 State = StateClass ()
 
@@ -72,6 +73,11 @@ enter_rule ("TopLevel_defsubr");
     set_return (`${Defsubr.rwr ()}`);
 return exit_rule ("TopLevel_defsubr");
 },
+TopLevel_deffunction : function (Deffn,) {
+enter_rule ("TopLevel_deffunction");
+    set_return (`${Deffn.rwr ()}`);
+return exit_rule ("TopLevel_deffunction");
+},
 TopLevel_defobj : function (Defobj,) {
 enter_rule ("TopLevel_defobj");
     set_return (`${Defobj.rwr ()}`);
@@ -81,6 +87,11 @@ TopLevel_builtin : function (x,) {
 enter_rule ("TopLevel_builtin");
     set_return (`${x.rwr ()}`);
 return exit_rule ("TopLevel_builtin");
+},
+TopLevel_call : function (x,) {
+enter_rule ("TopLevel_call");
+    set_return (`${x.rwr ()}`);
+return exit_rule ("TopLevel_call");
 },
 TopLevel_comment : function (s,line,) {
 enter_rule ("TopLevel_comment");
@@ -101,6 +112,11 @@ Defsubr : function (_4,ident,StatementBlock,line,) {
 enter_rule ("Defsubr");
     set_return (`\ndef ${ident.rwr ()} ():⤷\nglobal State⤶${StatementBlock.rwr ()}${line.rwr ().join ('')}\n`);
 return exit_rule ("Defsubr");
+},
+Deffunction : function (_4,ident,formals,StatementBlock,line,) {
+enter_rule ("Deffunction");
+    set_return (`\ndef ${ident.rwr ()} ${formals.rwr ()}:⤷\nglobal State⤶${StatementBlock.rwr ()}${line.rwr ().join ('')}\n`);
+return exit_rule ("Deffunction");
 },
 Defobj : function (_defobj,ident,Formals,line1,lb,line2,init,rb,line3,) {
 enter_rule ("Defobj");
@@ -172,14 +188,19 @@ enter_rule ("R_Statement_assignment");
     set_return (`${Assignment.rwr ()}`);
 return exit_rule ("R_Statement_assignment");
 },
-R_Statement_call : function (_at,Lval,rec,) {
+R_Statement_callindirect : function (_,lval,rec,) {
+enter_rule ("R_Statement_callindirect");
+    set_return (`${lval.rwr ()}()${rec.rwr ().join ('')}`);
+return exit_rule ("R_Statement_callindirect");
+},
+R_Statement_call : function (c,) {
 enter_rule ("R_Statement_call");
-    set_return (`\n${Lval.rwr ()}() ${rec.rwr ().join ('')}`);
+    set_return (`${c.rwr ()}`);
 return exit_rule ("R_Statement_call");
 },
-R_Statement_line : function (line,rec,) {
+R_Statement_line : function (ws,comment,line,rec,) {
 enter_rule ("R_Statement_line");
-    set_return (`${line.rwr ()}${rec.rwr ().join ('')}`);
+    set_return (`${ws.rwr ()}${comment.rwr ().join ('')}${line.rwr ()}${rec.rwr ().join ('')}`);
 return exit_rule ("R_Statement_line");
 },
 CommaIdent : function (_comma,ident,) {
@@ -192,15 +213,15 @@ enter_rule ("Builtin");
     set_return (`${x.rwr ()}${line.rwr ().join ('')}`);
 return exit_rule ("Builtin");
 },
-BuiltinPhrase_pop : function (_,) {
-enter_rule ("BuiltinPhrase_pop");
-    set_return (`State.S.pop ()`);
-return exit_rule ("BuiltinPhrase_pop");
-},
 BuiltinPhrase_popchar : function (_,) {
 enter_rule ("BuiltinPhrase_popchar");
     set_return (`chr(State.S.pop ())`);
 return exit_rule ("BuiltinPhrase_popchar");
+},
+BuiltinPhrase_pop : function (_,) {
+enter_rule ("BuiltinPhrase_pop");
+    set_return (`State.S.pop ()`);
+return exit_rule ("BuiltinPhrase_pop");
 },
 BuiltinPhrase_push : function (_,lp,exp,rp,) {
 enter_rule ("BuiltinPhrase_push");
@@ -272,11 +293,6 @@ enter_rule ("BuiltinPhrase_freshdict");
     set_return (`{}`);
 return exit_rule ("BuiltinPhrase_freshdict");
 },
-BuiltinPhrase_exec : function (_,f,) {
-enter_rule ("BuiltinPhrase_exec");
-    set_return (`${f.rwr ()}()`);
-return exit_rule ("BuiltinPhrase_exec");
-},
 BuiltinPhrase_isdigits : function (_,lp,exp,rp,) {
 enter_rule ("BuiltinPhrase_isdigits");
     set_return (`${exp.rwr ()}.isdigit()`);
@@ -291,6 +307,24 @@ BuiltinPhrase_tofloat : function (_,lp,exp,rp,) {
 enter_rule ("BuiltinPhrase_tofloat");
     set_return (`float (${exp.rwr ()})`);
 return exit_rule ("BuiltinPhrase_tofloat");
+},
+BuiltinPhrase_isInteger : function (_,lp,exp,rp,) {
+enter_rule ("BuiltinPhrase_isInteger");
+    set_return (`re.match(r"^-?\d*$", word)`);
+return exit_rule ("BuiltinPhrase_isInteger");
+},
+BuiltinPhrase_isFloat : function (_,lp,exp,rp,) {
+enter_rule ("BuiltinPhrase_isFloat");
+    set_return (`re.match(r"^-?\d*\.?\d*$", word)`);
+return exit_rule ("BuiltinPhrase_isFloat");
+},
+BuiltinPhrase_input : function (_,) {
+enter_rule ("BuiltinPhrase_input");
+    set_return (`
+State.BUFF = input("OK ")
+State.BUFP = 0
+`);
+return exit_rule ("BuiltinPhrase_input");
 },
 BuiltinPhrase_clearS : function (_,) {
 enter_rule ("BuiltinPhrase_clearS");
@@ -312,6 +346,11 @@ enter_rule ("BuiltinPhrase_rpop");
     set_return (`State.R.pop ()`);
 return exit_rule ("BuiltinPhrase_rpop");
 },
+BuiltinPhrase_rpush : function (_,lp,exp,rp,) {
+enter_rule ("BuiltinPhrase_rpush");
+    set_return (`State.R.append (${exp.rwr ()})`);
+return exit_rule ("BuiltinPhrase_rpush");
+},
 BuiltinPhrase_rtop : function (_,) {
 enter_rule ("BuiltinPhrase_rtop");
     set_return (`State.R [-1]`);
@@ -322,28 +361,35 @@ enter_rule ("BuiltinPhrase_rthird");
     set_return (`State.R [-3]`);
 return exit_rule ("BuiltinPhrase_rthird");
 },
-BuiltinPhrase_rpush : function (_,lp,exp,rp,) {
-enter_rule ("BuiltinPhrase_rpush");
-    set_return (`State.R.append (${exp.rwr ()})`);
-return exit_rule ("BuiltinPhrase_rpush");
+BuiltinPhrase_toboolean : function (_,lp,exp,rp,) {
+enter_rule ("BuiltinPhrase_toboolean");
+    set_return (`bool (${exp.rwr ()})`);
+return exit_rule ("BuiltinPhrase_toboolean");
 },
-BuiltinPhrase_isInteger : function (_,lp,exp,rp,) {
-enter_rule ("BuiltinPhrase_isInteger");
-    set_return (`re.match(r"^-?\d*$", word)`);
-return exit_rule ("BuiltinPhrase_isInteger");
+BuiltinPhrase_ignore : function (_,lp,exp,rp,) {
+enter_rule ("BuiltinPhrase_ignore");
+    set_return (``);
+return exit_rule ("BuiltinPhrase_ignore");
 },
-BuiltinPhrase_isFloat : function (_,lp,exp,rp,) {
-enter_rule ("BuiltinPhrase_isFloat");
-    set_return (`re.match(r"^-?\d*\.?\d*$", word)`);
-return exit_rule ("BuiltinPhrase_isFloat");
+BuiltinPhrase_funcall : function (_,f,actuals,) {
+enter_rule ("BuiltinPhrase_funcall");
+    set_return (`${f.rwr ()}${actuals.rwr ()}`);
+return exit_rule ("BuiltinPhrase_funcall");
 },
-BuiltinPhrase_input : function (_,) {
-enter_rule ("BuiltinPhrase_input");
-    set_return (`
-State.BUFF = input("OK ")
-State.BUFP = 0
-`);
-return exit_rule ("BuiltinPhrase_input");
+BuiltinPhrase_incompilationstate : function (_,) {
+enter_rule ("BuiltinPhrase_incompilationstate");
+    set_return (`State.compiling`);
+return exit_rule ("BuiltinPhrase_incompilationstate");
+},
+BuiltinPhrase_setcompilingstate : function (_,) {
+enter_rule ("BuiltinPhrase_setcompilingstate");
+    set_return (`State.compiling = True`);
+return exit_rule ("BuiltinPhrase_setcompilingstate");
+},
+BuiltinPhrase_setnotcompilingstate : function (_,) {
+enter_rule ("BuiltinPhrase_setnotcompilingstate");
+    set_return (`State.compiling = False`);
+return exit_rule ("BuiltinPhrase_setnotcompilingstate");
 },
 BuiltinPhrase_unrecognized : function (_,ident,args,) {
 enter_rule ("BuiltinPhrase_unrecognized");
@@ -525,11 +571,6 @@ enter_rule ("ExpExp_basic");
     set_return (`${Primary.rwr ()}`);
 return exit_rule ("ExpExp_basic");
 },
-Primary_call : function (p,actuals,) {
-enter_rule ("Primary_call");
-    set_return (`${p.rwr ()} ${actuals.rwr ()}`);
-return exit_rule ("Primary_call");
-},
 Primary_plain : function (p,) {
 enter_rule ("Primary_plain");
     set_return (`${p.rwr ()}`);
@@ -574,6 +615,11 @@ Atom_builtin : function (x,) {
 enter_rule ("Atom_builtin");
     set_return (`${x.rwr ()}`);
 return exit_rule ("Atom_builtin");
+},
+Atom_call : function (c,) {
+enter_rule ("Atom_call");
+    set_return (`${c.rwr ()}`);
+return exit_rule ("Atom_call");
 },
 Atom_emptylistconst : function (_72,_73,) {
 enter_rule ("Atom_emptylistconst");
@@ -624,11 +670,6 @@ Atom_range : function (_91,_92,Exp,_93,) {
 enter_rule ("Atom_range");
     set_return (`${_91.rwr ()}${_92.rwr ()}${Exp.rwr ()}${_93.rwr ()}`);
 return exit_rule ("Atom_range");
-},
-Atom_callident : function (id,actuals,) {
-enter_rule ("Atom_callident");
-    set_return (`${id.rwr ()} ${actuals.rwr ()}`);
-return exit_rule ("Atom_callident");
 },
 Atom_string : function (string,) {
 enter_rule ("Atom_string");
@@ -749,6 +790,11 @@ andOrIn_in : function (op,) {
 enter_rule ("andOrIn_in");
     set_return (` in `);
 return exit_rule ("andOrIn_in");
+},
+andOrIn_bitwiseand : function (op,) {
+enter_rule ("andOrIn_bitwiseand");
+    set_return (` & `);
+return exit_rule ("andOrIn_bitwiseand");
 },
 boolOp : function (_191,) {
 enter_rule ("boolOp");

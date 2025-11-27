@@ -58,7 +58,13 @@ frish {
      | "%freshdict" -- freshdict
      | "%digits?" "(" Exp ")" -- isdigits
      | "%toint" "(" Exp ")" -- toint
+     | "%tofloat" "(" Exp ")" -- tofloat
+     | "%isInteger" "(" Exp ")" -- isInteger
+     | "%isFloat" "(" Exp ")" -- isFloat
      | "%input" -- input
+     | "%clearS" -- clearS
+     | "%clearR" -- clearR
+     | "%pushNone" -- pushNone
      
      | "%rpop" -- rpop
      | "%rpush" "(" Exp ")" -- rpush
@@ -71,6 +77,8 @@ frish {
      | "%funcall" Primary Actuals -- funcall
 
      | "%inCompilationState" -- incompilationstate
+     | "%setCompilingState" -- setcompilingstate
+     | "%setNotCompilingState" -- setnotcompilingstate
 
      | "%" #ident Args? -- unrecognized
 
