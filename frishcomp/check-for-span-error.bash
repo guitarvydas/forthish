@@ -5,6 +5,6 @@ if grep span $1 ; then \
     @echo 'turn off "word wrap" and "formatted text" options for each port in draw.io ' for "$1"
     exit 1
 else
-    echo OK
+    # echo OK
     exit 0
 fi
