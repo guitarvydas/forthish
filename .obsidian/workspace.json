@@ -74,8 +74,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "16b388fa924d6af1",
@@ -171,13 +170,13 @@
     "frishcomp/out.✗",
     "frishcomp/out.1.frish",
     "frishcomp/out.0.frish",
-    "frishcomp/frish.drawio.json",
-    "frishcomp/out.zzz",
+    "frishcomp/#forthish.frish#",
+    "frishcomp/left-over.py",
+    "frishcomp/#emitpython.rwr#",
     "frishcomp/out.1.py",
     "frishcomp/out.0.py",
-    "frishcomp/check-for-span-error.bash",
-    "frishcomp/check-for-span-error.bash~",
-    "frishcomp/run-frish-compiler.bash",
+    "frishcomp/test.frish~",
+    "frishcomp/test.frish",
     "frishcomp/#Makefile#",
     "frishcomp/todo-notes.md",
     "frishcomp/script.md",

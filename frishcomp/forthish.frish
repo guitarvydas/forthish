@@ -1,4 +1,4 @@
-deffunction code (name, flags, does, p) {
+deffunction code (name, flags, does) {
     ⌈ Add new word to RAM dictionary. We create a word (Forth "object") in RAM with 5 fields and extend the
       the dictionary by linking back to the head of the dictionary list ⌉
     x ⇐ %funcall len (State.RAM)
@@ -7,7 +7,6 @@ deffunction code (name, flags, does, p) {
     %funcall State.RAM.append (name)       ⌈ (NFA) name of word ⌉
     %funcall State.RAM.append (flags)      ⌈       0 = normal word, 1 = immediate word ⌉
     %funcall State.RAM.append (does)       ⌈ (CFA) function pointer that points to code that executes the word ⌉
-    %funcall State.RAM.append (p)          ⌈ (PFA) private data ('p' for 'parameter') ⌉
 
     State.LAST ⇐ x                ⌈ LAST is the pointer to the head of the dictionary list, set it to point to
                                       this new word ⌉
@@ -223,7 +222,7 @@ defsubr xdoliteral {
 }
 
 defsubr literalize {
-    deftemps found, address ⇐ %lookup ("(literal)")
+    deftemps found, address ⇐ %lookup (subrs, "(literal)")
     %ignore (found)
     %funcall RAM.append (address)
     %funcall RAM.append (%pop)
@@ -261,7 +260,7 @@ defsubr x0branch {
 defsubr xif {
     %immediate ⌈ This instruction appears only inside subroutine sequences, ( f -- ) compile if test and branchFalse ⌉
     ⌈ Step. 1: generate conditional branch to yet-unknown target1 ⌉
-    deftemps found, branchFalseAddress ⇐ %lookup ("0branch")
+    deftemps found, branchFalseAddress ⇐ %lookup (subrs, "0branch")
     %ignore (found)
     %funcall RAM.append (branchFalseAddress) ⌈ insert branch-if-false opcode (word) ⌉
     %rpush (%RAMnext) ⌈ target1 onto r-stack as memo for later fixup ⌉
@@ -278,7 +277,7 @@ defsubr xelse {
     deftemp target1 ⇐ %rpop
     RAM [target1] ⇐ %RAMnext
     ⌈ Step. 2: generate unconditional branch for preceding IF, creating new memo for target2 on R-stack ⌉
-    deftemps found, brAddress ⇐ %lookup ("branch")
+    deftemps found, brAddress ⇐ %lookup (subrs, "branch")
     %rpush (%RAMnext) ⌈ target2 address on R-stack as memo for later fixup ⌉
     defsynonym target2 ≡ -1
     %funcall RAM.append (target2) ⌈ branch target will be fixed up later ⌉
@@ -394,7 +393,8 @@ deffunction _find(name) {
 }
 
 defsubr xfind {
-    ⌈ "( name | -- name 0|xt 1|xt -1) Search for word name." ⌉
+    ⌈ "( name | -- (name 0)|(xt 1)|(xt -1)) Search for word name." ⌉
+    ⌈ 3 possible results: 1. (name 0) if not found, 2. (xt 1) if found and word is immediate, 3. (xt -1) if found and word is normal ⌉
     %push (32)
     @xword
     deftemp found ⇐ %funcall _find(S[-1])
@@ -531,36 +531,45 @@ defsubr xinterpret {
     ⌈ ( string --) Execute word. ⌉
 
     @xfind
-    deftemp immediate ⇐ %pop
-    if %inCompilationState {
-	    xt ⇐ %pop
-	    if immediate {
+    ⌈ 3 possible results from xfind:
+        1. (name 0) if not found,
+	2. (xt 1) if found and word is immediate,
+	3. (xt -1) if found and word is normal ⌉
+    deftemp result ⇐ %pop					    defsynonym foundImmediate ≡ (result = 1)
+    deftemp item ⇐ %pop					    defsynonym foundNormal ≡ (result = -1)
+    	    	   						    defsynonym notFound ≡ (result = 0)
+    if (foundImmediate or foundNormal) {
+	if %inCompilationState {				    defsynonym xt ≡ item
+	    if foundImmediate {
 		State.W ⇐ xt
 		State.IP ⇐ -1  ⌈ Dummy to hold place in return stack. ⌉
 		@State.RAM[xt]  ⌈ Execute code. ⌉
 	    } else {
 		%funcall State.RAM.append(xt)
-            }
-     } else {
-	    word ⇐ %pop
-	    if (%isInteger (word)) {
-		%push (%toint (word))
-		if immediate {
-                        @internalize
-                }
-	    } elif (%isFloat (word)) {
-		%push (%tofloat (word))
-		if immediate {
-                        @internalize
-		}
-	    } else {
-		%clearS
-		%clearR
-		%print (word)
-		%print ("?")
-		%eol
-		return False
 	    }
+	 } else {
+	    ⌈ not compiling ⌉
+	    %funcall State.RAM.append (xt)
+	 }
+     } else {							    defsynonym word ≡ item
+	 if (%isInteger (word)) {
+	     %push (%toint (word))
+	     if %inCompilationState {
+		     @literalize
+	     }
+	 } elif (%isFloat (word)) {
+	     %push (%tofloat (word))
+	     if %inCompilationState {
+		     @literalize
+	     }
+	 } else {
+	     %clearS
+	     %clearR
+	     %print (word)
+	     %print ("?")
+	     %eol
+	     return False
+	 }
     }
     return True
 }
@@ -609,66 +618,6 @@ defsubr literalize {
     %funcall RAM.append(%pop)             ⌈ Compile literal value. ⌉
 }
 
-
-defsubr xinterpret {
-    ⌈ ( string --) Execute word ⌉
-    deftemp word ⇐ %pop
-    if %empty-string? (word) {
-        pass
-    } else {
-        deftemps found, subr ⇐ %lookup (subrs, word)
-        if found {
-            @subr
-        } elif %digits? (word) {
-            deftemp i ⇐ %toint (word)
-            %push (i)
-        } else {
-            %print (word)
-            %print ("?")
-            %eol
-        }
-    }
-}
-
-defvar subrs ⇐ %freshdict
-%assoc (subrs, "drop", ↪︎xdrop)
-%assoc (subrs, "dup", ↪︎xdup)
-%assoc (subrs, "negate", ↪︎xnegate)
-%assoc (subrs, "emit", ↪︎xemit)
-%assoc (subrs, "cr", ↪︎xcr)
-%assoc (subrs, ".", ↪︎xdot)
-%assoc (subrs, ".s", ↪︎xdots)
-%assoc (subrs, "+", ↪︎xadd)
-%assoc (subrs, "*", ↪︎xmul)
-%assoc (subrs, "swap", ↪︎xswap)
-%assoc (subrs, "-",    ↪︎xsub)
-%assoc (subrs, "/",    ↪︎xdiv)
-%assoc (subrs, "word", ↪︎xword)
-%assoc (subrs, '"', ↪︎xquote)
-%assoc (subrs, '."', ↪︎xdotquote)
-%assoc (subrs, "(", ↪︎xcomment)
-%assoc (subrs, "(literal)", doliteral)
-%assoc (subrs, "branch", ↪︎xbranch)
-%assoc (subrs, "0branch", ↪︎x0branch)
-%assoc (subrs, "if", ↪︎xif)
-%assoc (subrs, "else", ↪︎xelse)
-%assoc (subrs, "then", ↪︎xthen)
-%assoc (subrs, "constant", ↪︎xconst)
-%assoc (subrs, "create", ↪︎xcreate)
-%assoc (subrs, ",", ↪︎xcomma)
-%assoc (subrs, "variable", ↪︎xvar)
-%assoc (subrs, "dump", ↪︎xdump)
-%assoc (subrs, "@", ↪︎xstore)
-%assoc (subrs, "!", ↪︎xstore)
-%assoc (subrs, "bye",  ↪︎xbye)
-%assoc (subrs, "find", ↪︎xfind)
-%assoc (subrs, "'", ↪︎xtick)
-%assoc (subrs, "None", ↪︎pushNone)
-%assoc (subrs, "words", ↪︎xwords)    
-%assoc (subrs, "execute", ↪︎xexecute)
-%assoc (subrs, ":", ↪︎xcolon)
-%assoc (subrs, ";", ↪︎xsemi)
-%assoc (subrs, "interpret", ↪︎xinterpret)
 
 defsubr ok {
     ⌈ ( --) Interaction loop -- REPL ⌉

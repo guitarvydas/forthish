@@ -47,7 +47,6 @@ frish {
      | "%push" "(" Exp ")" -- push
      | "%scanfor" "(" ident ")" -- scanfor
      | "%assoc" "(" ident "," string "," Subraddress ")" -- assoc
-     | "%lookup" "(" ident "," Exp ")" -- lookup
      | "%eol" -- eol
      | "%print" "(" Exp ")" -- print
      | "%printAsCharacter" "(" Exp ")" -- printAsCharacter
@@ -79,6 +78,7 @@ frish {
      | "%inCompilationState" -- incompilationstate
      | "%setCompilingState" -- setcompilingstate
      | "%setNotCompilingState" -- setnotcompilingstate
+     | "%immediate" -- immediate
 
      | "%" #ident Args? -- unrecognized
 

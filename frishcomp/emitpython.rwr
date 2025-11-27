@@ -29,15 +29,6 @@ class StateClass:⤷
 
 State = StateClass ()
 
-def Lookup (dict, key):⤷
-    if key == '':⤷
-        return None, None⤶
-    elif not isinstance(key, str):⤷
-        return None, None⤶
-    elif key.isdigit ():⤷
-        return None, None⤶
-    v = dict [key]
-    return v is not None, v⤶
 «TopLevel»’
 
 TopLevel_defvar [ Defvar] =‛«Defvar»’
@@ -91,7 +82,6 @@ BuiltinPhrase_scanfor [_ lp want rp] = ‛
     State.S.append(found)
 ’
 BuiltinPhrase_assoc [_ lp dict _comma1 str _comma2 addr rp] = ‛\n«dict» [«str»] = «addr»’
-BuiltinPhrase_lookup [_ lp dict _comma1 str rp] = ‛Lookup («dict», «str»)’
 BuiltinPhrase_eol [_] = ‛print ()’
 BuiltinPhrase_print [_ lp exp rp] = ‛print («exp», end="")’
 BuiltinPhrase_printAsCharacter [_ lp exp rp] = ‛print (chr (int («exp»))), end="")’
@@ -125,6 +115,7 @@ BuiltinPhrase_funcall [_ f actuals] = ‛«f»«actuals»’
 BuiltinPhrase_incompilationstate [_] = ‛State.compiling’
 BuiltinPhrase_setcompilingstate [_] = ‛State.compiling = True’
 BuiltinPhrase_setnotcompilingstate [_] = ‛State.compiling = False’
+BuiltinPhrase_immediate [_] = ‛State.compiling = False’
 
 BuiltinPhrase_unrecognized [_ ident args?] = ‛«_» ⎝ error - unrecognized builtin "«ident»" (with given arguments) ⎠ «args» ’
 

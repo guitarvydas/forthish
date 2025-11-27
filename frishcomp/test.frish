@@ -1,0 +1,3 @@
+defsubr x {
+    deftemp y ⇐ %lookup (subrs, "(literal)")
+}
