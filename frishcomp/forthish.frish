@@ -219,7 +219,7 @@ defsubr xdoliteral {
 ⌉
     defsynonym lit ≡ RAM [IP]
     %push (lit)
-    %incIP ⌈ move past this item (the literal) - we're done with it ⌉
+    State.IP ⇐ State.IP + 1 ⌈ move past this item (the literal) - we're done with it ⌉
 }
 
 defsubr literalize {
@@ -241,7 +241,7 @@ defsubr x0branch {
     ⌈ This instruction appears only inside subroutine sequences, jump on false to address in next cell ⌉
     deftemp test ⇐ %toboolean (%pop)
     if (test) {
-        %incIP
+        State.IP ⇐ State.IP + 1
     } else {
         IP ⇐ RAM [IP]
     }
@@ -502,7 +502,7 @@ primitive invocation.
 
     %rpush (IP)
     IP ⇐ W + 1
-    while (-1 not= State.RAM[State.IP]) {
+    while (-1 != State.RAM[State.IP]) {
         W ⇐ State.RAM[State.IP]
 	State.IP ⇐ State.IP + 1
 	@State.RAM[State.W]
@@ -516,32 +516,31 @@ defsubr xcolon {
     %push (blank)
     @word
     deftemp name ⇐ %pop
-    code(name, doword)
+    %funcall code(name, doword)
     %setCompilingState
 }
 
 defsubr xsemi {
     ⌈ ( --) Finish definition. ⌉
     %immediate
-    %funcall State.RAM.append(-1)  # Marker for end of definition.
+    %funcall State.RAM.append(-1)  ⌈ Marker for end of definition. ⌉
     %setNotCompilingState
 }
 
 defsubr xinterpret {
     ⌈ ( string --) Execute word. ⌉
 
-    state ⇐ %getState
-
     @xfind
-    immediate ⇐ %pop
+    deftemp immediate ⇐ %pop
     if %inCompilationState {
 	    xt ⇐ %pop
-	    if immediate:
+	    if immediate {
 		State.W ⇐ xt
-		State.IP ⇐ -1  # Dummy to hold place in return stack.
-		@State.RAM[xt]  # Execute code.
-	    else:
+		State.IP ⇐ -1  ⌈ Dummy to hold place in return stack. ⌉
+		@State.RAM[xt]  ⌈ Execute code. ⌉
+	    } else {
 		%funcall State.RAM.append(xt)
+            }
      } else {
 	    word ⇐ %pop
 	    if (%isInteger (word)) {
@@ -562,7 +561,7 @@ defsubr xinterpret {
 		%eol
 		return False
 	    }
-    ]
+    }
     return True
 }
 
@@ -573,11 +572,11 @@ defsubr xinterpret {
 ⌈ Example of state-smart word, which Brodie sez not to do. Sorry, Leo... ⌉
 ⌈ This sin allows it to be used the same way compiling or interactive. ⌉
 defsubr xquote {
-    "( -- string) Read up to closing quote, push to stack."
+    ⌈ ( -- string) Read up to closing quote, push to stack. ⌉
     %immediate
-    %push (34);
+    %push (34)
     @xword
-    if 1 = fvget("state") {
+    if 1 = %funcall fvget("state") {
         @literalize
     }
 }
@@ -600,13 +599,15 @@ defsubr xcomment {
 
 defsubr doliteral {
     ⌈ Inside definitions only, pushes compiled literal to stack. ⌉
-    %push (RAM[IP])  # Push item at IP on stack.
-    IP += 1          # Advance IP past item to continue execution.
-defsubr literalize:
-    "Compile literal into definition."
-    %funcall RAM.append(_find("(literal)"))  # Compile address of doliteral.
-    %funcall RAM.append(%pop)             # Compile literal value.
+    %push (RAM[IP])  ⌈ Push item at IP on stack. ⌉
+    State.IP ⇐ State.IP + 1          ⌈ Advance IP past item to continue execution. ⌉
+}
 
+defsubr literalize {
+    ⌈ Compile literal into definition. ⌉
+    %funcall RAM.append(_find("(literal)"))  ⌈ Compile address of doliteral. ⌉
+    %funcall RAM.append(%pop)             ⌈ Compile literal value. ⌉
+}
 
 
 defsubr xinterpret {
@@ -679,7 +680,6 @@ defsubr ok {
 	           %print (" ok")
 		   %eol
 	   }
-	   ]
         }
     }
 }

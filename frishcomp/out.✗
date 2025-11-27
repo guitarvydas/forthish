@@ -1,8 +1,14 @@
-Error: Line 222, col 6:
-  221 |     %push (lit)⎩221⎭
-> 222 |     %incIP ⌈ move past this item (the literal) - we're done with it ⌉⎩222⎭
-             ^
-  223 | }⎩223⎭
-Expected not a keyword
+Error: Found errors in the action dictionary of the 'rwr' operation:
+- Semantic action 'R_Statement_call' has the wrong arity: expected 1, got 3
+- Semantic action 'R_Statement_line' has the wrong arity: expected 4, got 2
+- 'BuiltinPhrase_exec' is not a valid semantic action for 'frish'
+- 'BuiltinPhrase_tofloat' is not a valid semantic action for 'frish'
+- 'BuiltinPhrase_clearS' is not a valid semantic action for 'frish'
+- 'BuiltinPhrase_clearR' is not a valid semantic action for 'frish'
+- 'BuiltinPhrase_pushNone' is not a valid semantic action for 'frish'
+- 'BuiltinPhrase_isInteger' is not a valid semantic action for 'frish'
+- 'BuiltinPhrase_isFloat' is not a valid semantic action for 'frish'
+- 'Primary_call' is not a valid semantic action for 'frish'
+- 'Atom_callident' is not a valid semantic action for 'frish'
 
 grammar = "frish"

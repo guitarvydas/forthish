@@ -186,6 +186,7 @@ frish {
 
     Atom =
       | Builtin -- builtin
+      | Call -- call
       | "[" "]" -- emptylistconst
       | "{" "}" -- emptydict
       | "(" Exp ")" -- paren
@@ -275,7 +276,7 @@ frish {
       | "as"
       | "pair"
       | phi
-      )
+      ) ~idchar
       
   phi = ("ϕ" | "%CF%95")
 
