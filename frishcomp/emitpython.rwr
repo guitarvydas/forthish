@@ -126,7 +126,7 @@ BuiltinPhrase_incompilationstate [_] = ‛State.compiling’
 BuiltinPhrase_setcompilingstate [_] = ‛State.compiling = True’
 BuiltinPhrase_setnotcompilingstate [_] = ‛State.compiling = False’
 
-BuiltinPhrase_unrecognized [_ ident args?] = ‛«_» ⎝ error - unrecognized builtin (with given arguments) ⎠ «args» ’
+BuiltinPhrase_unrecognized [_ ident args?] = ‛«_» ⎝ error - unrecognized builtin "«ident»" (with given arguments) ⎠ «args» ’
 
 Args [lp stuff* rp] = ‛«lp»«stuff»«rp»’
 Deftemp [_deftemp lval _mutate e rec?] = ‛\n«lval» = «e»«rec»’
