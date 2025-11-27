@@ -13,10 +13,6 @@
       {
         "name": "Pre Optimize",
         "id": 17
-      },
-      {
-        "name": ":?A",
-        "id": 21
       }
     ],
     "connections": [
@@ -56,19 +52,6 @@
         }
       },
       {
-        "dir": 1,
-        "source_port": "bbb",
-        "target_port": "",
-        "source": {
-          "name": "Generate Python",
-          "id": 8
-        },
-        "target": {
-          "name": ":?A",
-          "id": 21
-        }
-      },
-      {
         "dir": 2,
         "source_port": "0",
         "target_port": "0.py",
@@ -79,17 +62,8 @@
       },
       {
         "dir": 2,
-        "source_port": "bbb",
-        "target_port": "zzz",
-        "source": {
-          "name": "Generate Python",
-          "id": 8
-        }
-      },
-      {
-        "dir": 2,
         "source_port": "✗",
-        "target_port": "zzz",
+        "target_port": "✗",
         "source": {
           "name": "Inhale",
           "id": 13
@@ -98,7 +72,7 @@
       {
         "dir": 2,
         "source_port": "✗",
-        "target_port": "zzz",
+        "target_port": "✗",
         "source": {
           "name": "Pre Optimize",
           "id": 17
@@ -129,6 +103,15 @@
         "source": {
           "name": "Inhale",
           "id": 13
+        }
+      },
+      {
+        "dir": 2,
+        "source_port": "✗",
+        "target_port": "✗",
+        "source": {
+          "name": "Generate Python",
+          "id": 8
         }
       }
     ],
@@ -288,8 +271,8 @@
       },
       {
         "dir": 2,
-        "source_port": "aaa",
-        "target_port": "bbb",
+        "source_port": "✗",
+        "target_port": "✗",
         "source": {
           "name": "Legalize Python",
           "id": 14
@@ -297,8 +280,8 @@
       },
       {
         "dir": 2,
-        "source_port": "aaa",
-        "target_port": "bbb",
+        "source_port": "✗",
+        "target_port": "✗",
         "source": {
           "name": "Legalize Python",
           "id": 10
@@ -307,7 +290,7 @@
       {
         "dir": 2,
         "source_port": "✗",
-        "target_port": "bbb",
+        "target_port": "✗",
         "source": {
           "name": "Post Optimize Python",
           "id": 18
@@ -316,7 +299,7 @@
       {
         "dir": 2,
         "source_port": "✗",
-        "target_port": "bbb",
+        "target_port": "✗",
         "source": {
           "name": "Transpile to Python",
           "id": 6
@@ -382,10 +365,6 @@
       {
         "name": "Grep for Errors",
         "id": 17
-      },
-      {
-        "name": ":?e",
-        "id": 21
       }
     ],
     "connections": [
@@ -429,18 +408,18 @@
         "source_port": "",
         "target_port": "",
         "source": {
-          "name": "Grep for Errors",
-          "id": 17
+          "name": ":$ python3 pyrelocate.py 55",
+          "id": 13
         },
         "target": {
-          "name": ":?e",
-          "id": 21
+          "name": "Grep for Errors",
+          "id": 17
         }
       },
       {
         "dir": 2,
         "source_port": "✗",
-        "target_port": "aaa",
+        "target_port": "✗",
         "source": {
           "name": "Decode for Python",
           "id": 5
@@ -449,7 +428,7 @@
       {
         "dir": 2,
         "source_port": "✗",
-        "target_port": "aaa",
+        "target_port": "✗",
         "source": {
           "name": "Python Indenter",
           "id": 9
@@ -460,15 +439,6 @@
         "source_port": "",
         "target_port": "",
         "source": {
-          "name": ":$ python3 pyrelocate.py 55",
-          "id": 13
-        }
-      },
-      {
-        "dir": 2,
-        "source_port": "",
-        "target_port": "",
-        "source": {
           "name": "Grep for Errors",
           "id": 17
         }
@@ -476,7 +446,7 @@
       {
         "dir": 2,
         "source_port": "✗",
-        "target_port": "aaa",
+        "target_port": "✗",
         "source": {
           "name": ":$ python3 pyrelocate.py 55",
           "id": 13
@@ -485,7 +455,7 @@
       {
         "dir": 2,
         "source_port": "✗",
-        "target_port": "aaa",
+        "target_port": "✗",
         "source": {
           "name": "Grep for Errors",
           "id": 17

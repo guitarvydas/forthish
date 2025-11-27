@@ -1,0 +1,18 @@
+error:     found, address = %  >>>  error - unrecognized builtin "lookup" (with given arguments)  <<<  ("(literal)") #line 226
+error:     %  >>>  error - unrecognized builtin "immediate" (with given arguments)  <<<
+error:     found, branchFalseAddress = %  >>>  error - unrecognized builtin "lookup" (with given arguments)  <<<  ("0branch") #line 264
+error:     State.R.append (%  >>>  error - unrecognized builtin "RAMnext" (with given arguments)  <<<   )
+error:     %  >>>  error - unrecognized builtin "immediate" (with given arguments)  <<<   #line 276
+error:     RAM [ target1] = %  >>>  error - unrecognized builtin "RAMnext" (with given arguments)  <<<   #line 279
+error:     found, brAddress = %  >>>  error - unrecognized builtin "lookup" (with given arguments)  <<<  ("branch") #line 281
+error:     State.R.append (%  >>>  error - unrecognized builtin "RAMnext" (with given arguments)  <<<   )
+error:     %  >>>  error - unrecognized builtin "immediate" (with given arguments)  <<<   #line 291
+error:     RAM [ target] = %  >>>  error - unrecognized builtin "RAMnext" (with given arguments)  <<<   #line 294#line 295#line 296
+error:     %  >>>  error - unrecognized builtin "fobjappend" (with given arguments)  <<<  (fobj,value) #line 313#line 314
+error:     while ( a <  start+%  >>>  error - unrecognized builtin "funcall" (with given arguments)  <<<  (min(n,(%funcalllen(RAM)-start))) ):#line 364
+error:     %  >>>  error - unrecognized builtin "immediate" (with given arguments)  <<<   #line 525
+error:     %  >>>  error - unrecognized builtin "immediate" (with given arguments)  <<<   #line 576
+error:     %  >>>  error - unrecognized builtin "immediate" (with given arguments)  <<<   #line 592
+error: %  >>>  error - unrecognized builtin "assoc" (with given arguments)  <<<  (subrs,'"',↪︎xquote) #line 647%  >>>  error - unrecognized builtin "assoc" (with given arguments)  <<<  (subrs,'."',↪︎xdotquote) #line 648
+error: subrs ["("] =  xcomment                                #line 649%  >>>  error - unrecognized builtin "assoc" (with given arguments)  <<<  (subrs,"(literal)",doliteral) #line 650
+errors found
