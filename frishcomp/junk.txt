@@ -1,1 +1,1 @@
-./pbp/t2t.bash . ./pbp frish.ohm emitpython.rwr support.mjs -
+python3 errgrep.py

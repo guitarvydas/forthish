@@ -1,18 +1,18 @@
-missingSemanticAction: Missing semantic action for 'Call' in operation 'rwr'.
-Action stack (most recent call last):
-  rwr > Main
-  rwr > _iter
-  rwr > default action for 'TopLevel'
-  rwr > TopLevel_defsubr
-  rwr > Defsubr
-  rwr > StatementBlock
-  rwr > Rec_Statement
-  rwr > default action for 'R_Statement'
-  rwr > R_Statement_comment
-  rwr > _iter
-  rwr > Rec_Statement
-  rwr > default action for 'R_Statement'
-  rwr > R_Statement_call
-  rwr > Call
-
-grammar = "frish"
+error:     found, address = %  >>>  error - unrecognized builtin (with given arguments)  <<<  ("(literal)") #line 226
+error:     %  >>>  error - unrecognized builtin (with given arguments)  <<<
+error:     found, branchFalseAddress = %  >>>  error - unrecognized builtin (with given arguments)  <<<  ("0branch") #line 264
+error:     State.R.append (%  >>>  error - unrecognized builtin (with given arguments)  <<<   )
+error:     %  >>>  error - unrecognized builtin (with given arguments)  <<<   #line 276
+error:     RAM [ target1] = %  >>>  error - unrecognized builtin (with given arguments)  <<<   #line 279
+error:     found, brAddress = %  >>>  error - unrecognized builtin (with given arguments)  <<<  ("branch") #line 281
+error:     State.R.append (%  >>>  error - unrecognized builtin (with given arguments)  <<<   )
+error:     %  >>>  error - unrecognized builtin (with given arguments)  <<<   #line 291
+error:     RAM [ target] = %  >>>  error - unrecognized builtin (with given arguments)  <<<   #line 294#line 295#line 296
+error:     %  >>>  error - unrecognized builtin (with given arguments)  <<<  (fobj,value) #line 313#line 314
+error:     while ( a <  start+%  >>>  error - unrecognized builtin (with given arguments)  <<<  (min(n,(%funcalllen(RAM)-start))) ):#line 364
+error:     %  >>>  error - unrecognized builtin (with given arguments)  <<<   #line 525
+error:     %  >>>  error - unrecognized builtin (with given arguments)  <<<   #line 576
+error:     %  >>>  error - unrecognized builtin (with given arguments)  <<<   #line 592
+error: %  >>>  error - unrecognized builtin (with given arguments)  <<<  (subrs,'"',↪︎xquote) #line 647%  >>>  error - unrecognized builtin (with given arguments)  <<<  (subrs,'."',↪︎xdotquote) #line 648
+error: subrs ["("] =  xcomment                                #line 649%  >>>  error - unrecognized builtin (with given arguments)  <<<  (subrs,"(literal)",doliteral) #line 650
+errors found

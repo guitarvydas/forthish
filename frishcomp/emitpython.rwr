@@ -73,6 +73,8 @@ R_Statement_call [c] =‛«c»’
 R_Statement_line [ws comment? line rec?] = ‛«ws»«comment»«line»«rec»’
 CommaIdent [_comma ident] = ‛, «ident»’
 
+Call [_ lval rec?] = ‛«lval»()«rec»’
+
 Builtin [x line?] = ‛«x»«line»’
 BuiltinPhrase_popchar [_] = ‛chr(State.S.pop ())’
 BuiltinPhrase_pop [_] = ‛State.S.pop ()’
