@@ -118,6 +118,8 @@ BuiltinPhrase_setcompilingstate [_] = ‛State.compiling = True’
 BuiltinPhrase_setnotcompilingstate [_] = ‛State.compiling = False’
 BuiltinPhrase_immediate [_] = ‛State.compiling = False’
 
+BuiltinPhrase_ramnext [_] = ‛len (Stack.RAM)’
+ 
 BuiltinPhrase_unrecognized [_ ident args?] = ‛«_» ⎝ error - unrecognized builtin "«ident»" (with given arguments) ⎠ «args» ’
 
 Args [lp stuff* rp] = ‛«lp»«stuff»«rp»’

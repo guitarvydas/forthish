@@ -81,6 +81,8 @@ frish {
      | "%setNotCompilingState" -- setnotcompilingstate
      | "%immediate" -- immediate
 
+     | "%RAMnext" -- ramnext
+     
      | "%" #ident Args? -- unrecognized
 
    Args = "(" StuffInsideParentheses* ")"

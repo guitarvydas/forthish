@@ -252,32 +252,34 @@ defsubr x0branch "0branch" {
 ⌈ IF, ELSE and THEN are "immediate" words - they should only be used inside of ":" (colon compiler) ⌉
 
 ⌈ see diagram `compiling-IF-THEN.drawio.png` ⌉
-defimmediatesubr xif "if" {
-    ⌈ This instruction appears only inside subroutine sequences, ( f -- ) compile if test and branchFalse ⌉
-    "( f --) Eval if flag is true."
-    %funcall Stack.RAM.append (%funcall _find ("0branch"))
-    %rpush (%funcall len (Stack.RAM)) ⌈ # Push next address to be updated on else or then. ⌉
-    %funcall Stack.RAM.append (-1)   ⌈ # Placeholder for target jump.⌉
-}
+defsubr xif { 
+    %immediate ⌈ This instruction appears only inside subroutine sequences, ( f -- ) compile if test and branchFalse ⌉ 
+    ⌈ Step. 1: generate conditional branch to yet-unknown target1 ⌉ 
+    deftemp branchFalseAddress ⇐ %funcall _find ("0branch")
+    %funcall Stack.RAM.append (branchFalseAddress) ⌈ insert branch-if-false opcode (word) ⌉ 
+    %rpush (%RAMnext) ⌈ target1 onto r-stack as memo for later fixup ⌉ 
+    defsynonym target1 ≡ -1 
+    %funcall Stack.RAM.append (target1) ⌈ branch target will be fixed up later ⌉ 
+    ⌈ Step. 2: generate code for true branch - return to compiler which will compile the following words ⌉ 
+    ⌈ THEN or ELSE will do the fixup of target1 ⌉ 
+} 
 
 ⌈ see diagram `compiling-IF-ELSE-THEN.drawio.png` ⌉
-==== defimmediatesubr xelse "else" {
-
+defimmediatesubr xelse "else" {
     ⌈ Step. 1: fixup target1 from IF-true, retrieving memo from R-stack ⌉
     deftemp target1 ⇐ %rpop
     RAM [target1] ⇐ %RAMnext
     ⌈ Step. 2: generate unconditional branch for preceding IF, creating new memo for target2 on R-stack ⌉
-    deftemps found, brAddress ⇐ %lookup (subrs, "branch")
+    deftemp brAddress ⇐ %funcall _find ("branch")
     %rpush (%RAMnext) ⌈ target2 address on R-stack as memo for later fixup ⌉
     defsynonym target2 ≡ -1
-    %funcall RAM.append (target2) ⌈ branch target will be fixed up later ⌉
+    %funcall Stack.RAM.append (target2) ⌈ branch target will be fixed up later ⌉
     ⌈ Step. 3: generate code for false branch - return to compiler which will compile the following words ⌉
     ⌈ THEN will do the fixup of target2 ⌉
 }
 
 ⌈ see diagrams `compiling-IF-THEN.drawio.png` and `compiling-IF-ELSE-THEN.drawio.png` ⌉
-==== defimmediatesubr xthen "then" {
-
+defimmediatesubr xthen "then" {
     ⌈ Step. 1: fixup target (from IF or from ELSE, above), retrieving memo from R-stack ⌉
     deftemp target ⇐ %rpop
     RAM [target] ⇐ %RAMnext
