@@ -5,6 +5,7 @@ frish {
     | Defvar -- defvar
     | Defsynonym -- defsynonym
     | Defsubr -- defsubr
+    | Defimmediatesubr -- defimmediatesubr
     | Deffunction -- deffunction
     | Defobj -- defobj
     | Builtin -- builtin
@@ -13,7 +14,8 @@ frish {
     | line -- line
 
    Defvar = "defvar" Lval "⇐" Exp line?
-   Defsubr = "defsubr" ident StatementBlock line?
+   Defsubr = "defsubr" ident string StatementBlock line?
+   Defimmediatesubr = "defimmediatesubr" ident string StatementBlock line?
    Deffunction = "deffunction" ident Formals StatementBlock line?
    Defobj = "defobj" ident ObjFormals? line? "{" line? InitStatement+ "}" line?
 
@@ -71,7 +73,6 @@ frish {
      | "%rthird" -- rthird
 
      | "%toboolean" "(" Exp ")" -- toboolean
-     | "%ignore" "(" ident ")" -- ignore
 
      | "%funcall" Primary Actuals -- funcall
 

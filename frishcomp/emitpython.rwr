@@ -34,6 +34,7 @@ State = StateClass ()
 TopLevel_defvar [ Defvar] =‛«Defvar»’
 TopLevel_defsynonym [ Defsynonym] =‛«Defsynonym»’
 TopLevel_defsubr [ Defsubr] =‛«Defsubr»’
+TopLevel_defimmediatesubr [ Defsubr] =‛«Defimmediatesubr»’
 TopLevel_deffunction [ Deffn] =‛«Deffn»’
 TopLevel_defobj [ Defobj] =‛«Defobj»’
 TopLevel_builtin [x] =‛«x»’
@@ -42,7 +43,8 @@ TopLevel_comment [s line?] =‛\n«s»«line»’
 TopLevel_line [line] =‛«line»’
 
 Defvar [ __ lval _eq e line?] = ‛\n«lval» = «e»«line»’
-Defsubr [ _4 ident StatementBlock line?] = ‛\ndef «ident» ():⤷\nglobal State⤶«StatementBlock»«line»\n’
+Defsubr [ _4 ident str StatementBlock line?] = ‛\ndef «ident» ():⤷\nglobal State⤶«StatementBlock»«line»\ncode(«str», «ident», 0)\n’
+Defimmediatesubr [ _4 ident str StatementBlock line?] = ‛\ndef «ident» ():⤷\nglobal State⤶«StatementBlock»«line»\nncode(«str», «ident», 1)\n’
 Deffunction [ _4 ident formals StatementBlock line?] = ‛\ndef «ident» «formals»:⤷\nglobal State⤶«StatementBlock»«line»\n’
 Defobj [ _defobj ident Formals line1? lb line2? init+ rb line3?] = ‛\nclass «ident»:⤷\ndef __init__ (self,«Formals»):«line1»⤷«line2»«init»«line3»⤶⤶\n’
 StatementBlock [ line1? lb line2? Statement     line3? rb  line4?] = ‛«line1»«line2»⤷«Statement»«line3»«line4»⤶’
@@ -109,7 +111,6 @@ BuiltinPhrase_rtop [_] = ‛State.R [-1]’
 BuiltinPhrase_rthird [_] = ‛State.R [-3]’
 
 BuiltinPhrase_toboolean [_ lp exp rp] = ‛bool («exp»)’
-BuiltinPhrase_ignore [_ lp exp rp] = ‛’
 
 BuiltinPhrase_funcall [_ f actuals] = ‛«f»«actuals»’
 BuiltinPhrase_incompilationstate [_] = ‛State.compiling’
