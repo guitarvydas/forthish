@@ -75,19 +75,15 @@ function fetchArg (name) {
     return args [name];
 }
 
-function encodews (s) { return encodequotes (encodeURIComponent (s)); }
-
-function encodequotes (s) { 
-    let rs = s.replace (/"/g, '%22').replace (/'/g, '%27');
-    return rs;
-}
-
 let linenumber = 0;
 function getlineinc () {
     linenumber += 1;
     return `${linenumber}`;
 }
 
+function pynlcomments (s) {
+    return s.replace (/\n/g, '\n#')
+}
 let parameters = {};
 function pushParameter (name, v) {
     if (!parameters [name]) {
@@ -117,7 +113,7 @@ return exit_rule ("char_unicodestring");
 },
 char_comment : function (lb,cs,rb,) {
 enter_rule ("char_comment");
-    set_return (`#${cs.rwr ().join ('')}`);
+    set_return (`#${pynlcomments (`${cs.rwr ().join ('')}`,)}`);
 return exit_rule ("char_comment");
 },
 char_errormessage : function (lb,cs,rb,) {

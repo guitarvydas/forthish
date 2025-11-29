@@ -1,7 +1,7 @@
 % rewrite pydecode {
   text [chars+] = ‛«chars»’ 
   char_unicodestring [s] = ‛«s»’
-  char_comment [lb cs* rb] = ‛#«cs»’
+  char_comment [lb cs* rb] = ‛#⎨pynlcomments ‛«cs»’⎬’
   char_errormessage [lb cs* rb] = ‛ >>> «cs» <<< ’
   char_line [lb cs* rb] = ‛#line «cs»’
   char_other [c] = ‛«c»’

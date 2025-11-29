@@ -34,7 +34,7 @@ State = StateClass ()
 TopLevel_defvar [ Defvar] =‛«Defvar»’
 TopLevel_defsynonym [ Defsynonym] =‛«Defsynonym»’
 TopLevel_defsubr [ Defsubr] =‛«Defsubr»’
-TopLevel_defimmediatesubr [ Defsubr] =‛«Defimmediatesubr»’
+TopLevel_defimmediatesubr [ defimmediatesubr] =‛«defimmediatesubr»’
 TopLevel_deffunction [ Deffn] =‛«Deffn»’
 TopLevel_defobj [ Defobj] =‛«Defobj»’
 TopLevel_builtin [x] =‛«x»’
@@ -43,8 +43,8 @@ TopLevel_comment [s line?] =‛\n«s»«line»’
 TopLevel_line [line] =‛«line»’
 
 Defvar [ __ lval _eq e line?] = ‛\n«lval» = «e»«line»’
-Defsubr [ _4 ident str StatementBlock line?] = ‛\ndef «ident» ():⤷\nglobal State⤶«StatementBlock»«line»\ncode(«str», «ident», 0)\n’
-Defimmediatesubr [ _4 ident str StatementBlock line?] = ‛\ndef «ident» ():⤷\nglobal State⤶«StatementBlock»«line»\nncode(«str», «ident», 1)\n’
+Defsubr [ _4 ident str StatementBlock line?] = ‛\ndef «ident» ():⤷\nglobal State⤶«StatementBlock»«line»⤷\ncode(«str», «ident», 0)⤶\n’
+Defimmediatesubr [ _4 ident str StatementBlock line?] = ‛\ndef «ident» ():⤷\nglobal State⤶«StatementBlock»«line»⤷\ncode(«str», «ident», 1)⤶\n’
 Deffunction [ _4 ident formals StatementBlock line?] = ‛\ndef «ident» «formals»:⤷\nglobal State⤶«StatementBlock»«line»\n’
 Defobj [ _defobj ident Formals line1? lb line2? init+ rb line3?] = ‛\nclass «ident»:⤷\ndef __init__ (self,«Formals»):«line1»⤷«line2»«init»«line3»⤶⤶\n’
 StatementBlock [ line1? lb line2? Statement     line3? rb  line4?] = ‛«line1»«line2»⤷«Statement»«line3»«line4»⤶’
@@ -61,8 +61,8 @@ R_Statement_return [ _29 ReturnExp] =‛\nreturn «ReturnExp»’
 R_Statement_for [ ForStatement] =‛«ForStatement»’
 R_Statement_while [ WhileStatement] =‛«WhileStatement»’
 R_Statement_assignment [ Assignment] =‛«Assignment»’
-R_Statement_callindirect [_ lval rec?] =‛«lval»()«rec»’
-R_Statement_call [c] =‛«c»’
+R_Statement_callindirect [_ lval rec?] =‛\n«lval»()«rec»’
+R_Statement_call [c] =‛\n«c»’
 R_Statement_line [ws comment? line rec?] = ‛«ws»«comment»«line»«rec»’
 CommaIdent [_comma ident] = ‛, «ident»’
 
@@ -86,7 +86,7 @@ BuiltinPhrase_scanfor [_ lp want rp] = ‛
 BuiltinPhrase_assoc [_ lp dict _comma1 str _comma2 addr rp] = ‛\n«dict» [«str»] = «addr»’
 BuiltinPhrase_eol [_] = ‛print ()’
 BuiltinPhrase_print [_ lp exp rp] = ‛print («exp», end="")’
-BuiltinPhrase_printAsCharacter [_ lp exp rp] = ‛print (chr (int («exp»))), end="")’
+BuiltinPhrase_printAsCharacter [_ lp exp rp] = ‛print (chr (int («exp»)), end="")’
 BuiltinPhrase_emptyinput [_] = ‛(State.BUFP >= len(State.BUFF))’
 BuiltinPhrase_emptystring [_ lp s rp] = ‛(not «s»)’
 BuiltinPhrase_quit [_] = ‛\nraise SystemExit’
@@ -108,6 +108,7 @@ BuiltinPhrase_pushNone [_] = ‛\nState.S.append (None)’
 BuiltinPhrase_rpop [_] = ‛State.R.pop ()’
 BuiltinPhrase_rpush [_ lp exp rp] = ‛State.R.append («exp»)’
 BuiltinPhrase_rtop [_] = ‛State.R [-1]’
+BuiltinPhrase_rsecond [_] = ‛State.R [-2]’
 BuiltinPhrase_rthird [_] = ‛State.R [-3]’
 
 BuiltinPhrase_toboolean [_ lp exp rp] = ‛bool («exp»)’
