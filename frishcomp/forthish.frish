@@ -285,6 +285,59 @@ defimmediatesubr xthen "then" {
     RAM [target] ⇐ %RAMnext
 }
 
+defsubr x_do "(do)" {
+    ⌈ ( limit index --) Puts limit and index on return stack. ⌉
+    @xswap
+    deftemp index ⇐ %pop
+    deftemp limit ⇐ %pop
+    %rpush (index)
+    %rpush (limit)
+}
+
+defimmediatesubr xdo "xdo" {
+    ⌈ (  limit index --) Begin counted loop. ⌉
+    Stack.RAM.append(%funcall _find("(do)"))  ⌈ Push do loop handler. ⌉
+    %rpush(%RAMnext)           ⌈ Push address to jump back to. ⌉
+}
+
+===================
+defsubr x_loop "(loop)" {
+    ⌈ (  -- f) Determine if loop is done. ⌉
+    deftemp limit ⇐ %pop
+    deftemp index ⇐ %pop
+    R[-1] += %pop             ⌈ Increment index. ⌉
+    %push(R[-1] >= R[-2])       ⌈ Test if index matches limit. ⌉
+    if(S[-1]): %rpop; %rpop  ⌈ Remove loop variables. ⌉
+}
+===================
+
+defimmediatesubr xploop "+loop" {
+    ⌈ ( --) Close counted loop. ⌉
+    Stack.RAM.append(%funcall _find("(loop)"))   ⌈ Compile in loop test. ⌉
+    Stack.RAM.append(%funcall _find("0branch"))  ⌈ Compile in branch check. ⌉
+    Stack.RAM.append(%rpop)           ⌈ Address to jump back to. ⌉
+}
+
+defimmediatesubr xloop "xloop" {
+    ⌈ (  --) Close counted loop. ⌉
+    %push (1)
+    @literalize                  ⌈ Default loop increment for x_loop. ⌉
+    Stack.RAM.append(%funcall _find("(loop)"))   ⌈ Compile in loop test. ⌉
+    Stack.RAM.append(%funcall _find("0branch"))  ⌈ Compile in branch check. ⌉
+    Stack.RAM.append(%rpop)           ⌈ Address to jump back to. ⌉
+}
+
+defimmediatesubr xbegin "begin" {
+    %rpush (%RAMnext)  ⌈ ( --) Start indefinite loop. ⌉
+}
+
+defimmediatesubr xuntil "until" {
+    ⌈ (  f --) Close indefinite loop with test. ⌉
+    Stack.RAM.append(%funcall _find("0branch"))  ⌈ Expects result of test on stack. ⌉
+    Stack.RAM.append(%rpop)           ⌈ Address to jump back to. ⌉
+}
+
+
 
 ⌈  "... 123 constant K ..." ⌉
 ⌈  at interpretation time: 123 is on the Stack, we have consumed "constant" from BUFF, BUFF now contains "K ..." ⌉
