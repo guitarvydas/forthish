@@ -94,7 +94,10 @@ BuiltinPhrase_tofloat [_ lp exp rp] = ‛float («exp»)’
 BuiltinPhrase_isInteger [_ lp exp rp] = ‛re.match(r"^-?\\d*$", word)’
 BuiltinPhrase_isFloat [_ lp exp rp] = ‛re.match(r"^-?\d*\\.?\\d*$", word)’
 BuiltinPhrase_input [_] = ‛
-#State.BUFF = input("OK ")
+State.BUFF = input("OK ")
+State.BUFP = 0
+’
+BuiltinPhrase_debuginput [_] = ‛
 State.BUFF = "7 ."
 State.BUFP = 0
 ’

@@ -64,6 +64,7 @@ frish {
      | "%isInteger" "(" Exp ")" -- isInteger
      | "%isFloat" "(" Exp ")" -- isFloat
      | "%input" -- input
+     | "%debuginput" -- debuginput
      | "%clearS" -- clearS
      | "%clearR" -- clearR
      | "%pushNone" -- pushNone

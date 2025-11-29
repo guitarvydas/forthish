@@ -638,7 +638,7 @@ deffunction ok () {
 deffunction debugok () {
     ⌈ ( --) Interaction loop -- REPL ⌉
     defsynonym blank ≡ 32
-        %input
+        %debuginput
         while not %empty-input {
            if (@xinterpret) {
 	           %print (" ok")

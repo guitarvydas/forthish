@@ -834,8 +834,7 @@ def ok ():
     blank =  32                                        #line 626
     while  True:                                       #line 627
 
-        #State.BUFF = input("OK ")
-        State.BUFF = "7 ."
+        State.BUFF = input("OK ")
         State.BUFP = 0
                                                        #line 628
         while not (State.BUFP >= len(State.BUFF)):     #line 629
@@ -849,7 +848,6 @@ def debugok ():
 
     blank =  32                                        #line 640
 
-    #State.BUFF = input("OK ")
     State.BUFF = "7 ."
     State.BUFP = 0
                                                        #line 641
