@@ -212,7 +212,7 @@ defsubr xdoliteral "(literal)" {
 
      "IP" is the current word index in a sequence of words being compiled. 
 ⌉
-    defsynonym lit ≡ RAM [IP]
+    defsynonym lit ≡ State.RAM [State.IP]
     %push (lit)
     State.IP ⇐ State.IP + 1 ⌈ move past this item (the literal) - we're done with it ⌉
 }
@@ -226,7 +226,7 @@ deffunction literalize () {
 defsubr xbranch "branch" {
     ⌈ This instruction appears only inside subroutine sequences, jump to address in next cell ⌉
     ⌈ This instruction is inserted into a subr sequence when compiling control-flow words, like "else" see below) ⌉
-    IP ⇐ RAM [IP]
+    State.IP ⇐ State.RAM [State.IP]
     ⌈ normally, we just execute an instruction then move the IP sequentially forward by 1 unit, i.e. IP ⇐ IP + 1 ⌉
     ⌈   in this case, though, we explicitly change the IP to some other value and don't just increment it ⌉
 }
@@ -237,7 +237,7 @@ defsubr x0branch "0branch" {
     if (test) {
         State.IP ⇐ State.IP + 1
     } else {
-        IP ⇐ RAM [IP]
+       State.IP ⇐ State.RAM [State.IP]
     }
 }
 
@@ -268,7 +268,7 @@ defsubr xif "if" {
 defimmediatesubr xelse "else" {
     ⌈ Step. 1: fixup target1 from IF-true, retrieving memo from R-stack ⌉
     deftemp target1 ⇐ %rpop
-    RAM [target1] ⇐ %RAMnext
+    State.RAM [target1] ⇐ %RAMnext
     ⌈ Step. 2: generate unconditional branch for preceding IF, creating new memo for target2 on R-stack ⌉
     deftemp brAddress ⇐ %funcall _find ("branch")
     %rpush (%RAMnext) ⌈ target2 address on R-stack as memo for later fixup ⌉
@@ -282,7 +282,7 @@ defimmediatesubr xelse "else" {
 defimmediatesubr xthen "then" {
     ⌈ Step. 1: fixup target (from IF or from ELSE, above), retrieving memo from R-stack ⌉
     deftemp target ⇐ %rpop
-    RAM [target] ⇐ %RAMnext
+    State.RAM [target] ⇐ %RAMnext
 }
 
 defsubr x_do "(do)" {
@@ -349,7 +349,7 @@ defsubr xconst "const" {
     ⌈  get next word - the name - from BUFF ⌉
     defsynonym blank ≡ 32
     %push (blank)
-    @word
+    @xword
     ⌈  stack is now: ( NNNN name -- ) ⌉
     deftemp name ⇐ %pop
     deftemp value ⇐ %pop
@@ -359,13 +359,13 @@ defsubr xconst "const" {
 }
 
 deffunction doconst () {  ⌈ method for const ⌉
-    defsynonym parameter ≡ RAM [W + 1]
+    defsynonym parameter ≡ State.RAM [State.W + 1]
     %push (parameter)
 }
 
 
 deffunction docreate () {
-    defsynonym parameterAddress ≡ %funcall len (RAM) + 4
+    defsynonym parameterAddress ≡ %funcall len (State.RAM) + 4
     %push (parameterAddress)
 }
 deffunction create (name) {
@@ -375,13 +375,13 @@ deffunction create (name) {
 defsubr xcreate "create"{
     defsynonym blank ≡ 32
     %push (blank)
-    @word
+    @xword
     deftemp name ⇐ %pop
     %funcall create (name)
 }
 
 deffunction comma (value) {
-    %funcall RAM.append (value)
+    %funcall State.RAM.append (value)
 }
 
 defsubr xcomma "," {
@@ -396,7 +396,7 @@ deffunction fvar (name, value) {
 defsubr xvar "variable" {
     defsynonym blank ≡ 32
     %push (blank)
-    @word
+    @xword
     deftemp name ⇐ %pop
     deftemp value ⇐ %pop
     %funcall fvar (name, value)    
@@ -407,10 +407,10 @@ defsubr xdump "dump" {
     deftemp start ⇐ %toint (%pop)
     %print ("----------------------------------------------------------------")
     deftemp a ⇐ start
-    while (a < start + (%funcall min (n, (%funcall len (RAM) - start)))) {
+    while (a < start + (%funcall min (n, (%funcall len (State.RAM) - start)))) {
         %print (a)
 	%print (": ")
-	%print (RAM [a])
+	%print (State.RAM [a])
 	%eol
         deftemp a ⇐ a + 1
     }
@@ -419,7 +419,7 @@ defsubr xdump "dump" {
 defsubr xstore"!" {
     deftemp b ⇐ %pop
     deftemp a ⇐ %pop
-    RAM [b] ⇐ a
+    State.RAM [b] ⇐ a
 }
 
 defsubr xbye "bye" { ⌈ ( --) Leave interpreter ⌉ %quit }
@@ -427,13 +427,13 @@ defsubr xbye "bye" { ⌈ ( --) Leave interpreter ⌉ %quit }
 
 deffunction _find (name) {
     ⌈ "( name -- cfa|0) Find CFA of word name." ⌉
-    deftemp x ⇐ LAST
+    deftemp x ⇐ State.LAST
     while (x >= 0) {
         ⌈ ## print(f"-- {x} : {RAM[x]}, {RAM[x + 1]}")  # Debug. ⌉
-        if (name = RAM[x + 1]) {  ⌈ # Match! ⌉
+        if (name = State.RAM[x + 1]) {  ⌈ # Match! ⌉
             return x + 3
         } else {
-            x ⇐ RAM[x]  ⌈ # Get next link. ⌉
+            x ⇐ State.RAM[x]  ⌈ # Get next link. ⌉
 	}
     }
     return 0  ⌈ # Nothing found. ⌉
@@ -444,14 +444,14 @@ defsubr xfind "find" {
     ⌈ 3 possible results: 1. (name 0) if not found, 2. (xt 1) if found and word is immediate, 3. (xt -1) if found and word is normal ⌉
     %push (32)
     @xword
-    deftemp found ⇐ %funcall _find(S[-1])
+    deftemp found ⇐ %funcall _find(%stop)
     if (0 = found) {
         %push (0)
     } else {
         %pop  ⌈ # Get rid of name on stack. ⌉
         %push(found)
         deftemp immediate ⇐ -1
-        if (RAM[S[-1] - 1] & 1) { immediate ⇐ 1 }
+        if (State.RAM[%stop - 1] & 1) { immediate ⇐ 1 }
         %push(immediate)
     }
 }
@@ -475,21 +475,21 @@ defsubr xnone "None" {
   generalization?) ⌉
 deffunction fvget (name) {
     deftemp fobjaddress ⇐ %funcall _find(%pop)
-    return RAM [fobjaddress + 1]
+    return State.RAM [fobjaddress + 1]
 }
 
 deffunction fvset (name, v) {
     deftemp fobjaddress ⇐ %funcall _find(%pop)
-    defsynonym namefieldaddess ≡ fobjaddress + 1
-    RAM [namefieldaddress] ⇐ v
+    defsynonym namefieldaddress ≡ fobjaddress + 1
+    State.RAM [namefieldaddress] ⇐ v
 }
 
 
 defsubr xwords "words" {
     ⌈ print words in dictionary ⌉
-    deftemp x ⇐ LAST
+    deftemp x ⇐ State.LAST
     while (x > -1) {
-        %print (RAM [x+ 1])
+        %print (State.RAM [x+ 1])
 	%print (" ")
     }
     %eol
@@ -561,7 +561,7 @@ defsubr xcolon ":" {
     ⌈ ( name | --) Start compilation. ⌉
     defsynonym blank ≡ 32
     %push (blank)
-    @word
+    @xword
     deftemp name ⇐ %pop
     %funcall code(name, doword)
     %setCompilingState
@@ -585,8 +585,8 @@ defsubr xinterpret "interpret" {
     deftemp result ⇐ %pop					    defsynonym foundImmediate ≡ (result = 1)
     deftemp item ⇐ %pop					    defsynonym foundNormal ≡ (result = -1)
     	    	   						    defsynonym notFound ≡ (result = 0)
-    if (foundImmediate or foundNormal) {
-	if %inCompilationState {				    defsynonym xt ≡ item
+    if (foundImmediate or foundNormal) {		    	    defsynonym xt ≡ item
+	if %inCompilationState {		
 	    if foundImmediate {
 		State.W ⇐ xt
 		State.IP ⇐ -1  ⌈ Dummy to hold place in return stack. ⌉
@@ -621,46 +621,6 @@ defsubr xinterpret "interpret" {
     return True
 }
 
-
-
-
-
-⌈ Example of state-smart word, which Brodie sez not to do. Sorry, Leo... ⌉
-⌈ This sin allows it to be used the same way compiling or interactive. ⌉
-defimmediatesubr xquote "quote" {
-    ⌈ ( -- string) Read up to closing quote, push to stack. ⌉
-
-    %push (34)
-    @xword
-    if 1 = %funcall fvget("state") {
-        @literalize
-    }
-}
-
-
-defimmediatesubr xcomment "(" {
-    ⌈ ( --) Read up to close paren. ⌉
-
-    defsynonym rpar ≡ 41
-    %push (rpar)
-    @xword
-    %pop
-}
-
-
-deffunction doliteral () {
-    ⌈ Inside definitions only, pushes compiled literal to stack. ⌉
-    %push (RAM[IP])  ⌈ Push item at IP on stack. ⌉
-    State.IP ⇐ State.IP + 1          ⌈ Advance IP past item to continue execution. ⌉
-}
-
-deffunction literalize () {
-    ⌈ Compile literal into definition. ⌉
-    %funcall RAM.append(_find("(literal)"))  ⌈ Compile address of doliteral. ⌉
-    %funcall RAM.append(%pop)             ⌈ Compile literal value. ⌉
-}
-
-
 deffunction ok () {
     ⌈ ( --) Interaction loop -- REPL ⌉
     defsynonym blank ≡ 32
@@ -675,5 +635,22 @@ deffunction ok () {
     }
 }
 
-@ok
+deffunction debugok () {
+    ⌈ ( --) Interaction loop -- REPL ⌉
+    defsynonym blank ≡ 32
+        %input
+        while not %empty-input {
+           if (@xinterpret) {
+	           %print (" ok")
+		   %eol
+	   }
+	   %print (State.BUFP) %print (" -- ") %print (State.BUFF) %eol
+	   @xdots
+        }
+	   %print (State.BUFP) %print (" == ") %print (State.BUFF) %eol
+	   @xdot
+	   @xdots
+}
+
+@debugok
     

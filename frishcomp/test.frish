@@ -1,4 +1,6 @@
-⌈ see diagram `compiling-IF-ELSE-THEN.drawio.png` ⌉
-defsubr xyz "xyz" {
-@abc
+⌈ see diagrams `compiling-IF-THEN.drawio.png` and `compiling-IF-ELSE-THEN.drawio.png` ⌉
+defimmediatesubr xthen "then" {
+    ⌈ Step. 1: fixup target (from IF or from ELSE, above), retrieving memo from R-stack ⌉
+    deftemp target ⇐ %rpop
+    RAM [target] ⇐ %RAMnext
 }

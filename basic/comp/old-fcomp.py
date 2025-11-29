@@ -188,6 +188,7 @@ def _find(name):
 def xfind():
     "( name | -- name 0|xt 1|xt -1) Search for word name."
     S.append(32); xword()
+    print (f'xfind {S}')
     found = _find(S[-1])
     if 0 == found:
         S.push(0)
@@ -195,6 +196,7 @@ def xfind():
         S.pop()  # Get rid of name on stack.
         S.push(found)
         immediate = -1
+        print (f'old xfind {S} {RAM[S[-1] - 1]}')
         if (RAM[S[-1] - 1] & 1): immediate = 1
         S.push(immediate)
 code("find", xfind)
@@ -306,6 +308,7 @@ def ok():
             # print(BUFF[BUFP:])  # Debug.
             fine = xinterpret()
         if fine: print(" ok")
-
+        print (f'old {S}')
 if "__main__" == __name__:
+    print (RAM[0:10])
     ok()

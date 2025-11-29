@@ -3,14 +3,6 @@
 Main [TopLevel+] = ‛
 import re
 
-S = None
-R = None
-RAM = None
-LAST = None
-IP = None
-BUFF = None
-BUFP = None
-
 class Stack(list):⤷
     def push(my, *items):⤷
         my.extend(items)⤶⤶
@@ -43,8 +35,8 @@ TopLevel_comment [s line?] =‛\n«s»«line»’
 TopLevel_line [line] =‛«line»’
 
 Defvar [ __ lval _eq e line?] = ‛\n«lval» = «e»«line»’
-Defsubr [ _4 ident str StatementBlock line?] = ‛\ndef «ident» ():⤷\nglobal State⤶«StatementBlock»«line»⤷\ncode(«str», «ident», 0)⤶\n’
-Defimmediatesubr [ _4 ident str StatementBlock line?] = ‛\ndef «ident» ():⤷\nglobal State⤶«StatementBlock»«line»⤷\ncode(«str», «ident», 1)⤶\n’
+Defsubr [ _4 ident str StatementBlock line?] = ‛\ndef «ident» ():⤷\nglobal State⤶«StatementBlock»«line»\ncode(«str»,0,  «ident»)\n’
+Defimmediatesubr [ _4 ident str StatementBlock line?] = ‛\ndef «ident» ():⤷\nglobal State⤶«StatementBlock»«line»\ncode(«str», 1, «ident»)\n’
 Deffunction [ _4 ident formals StatementBlock line?] = ‛\ndef «ident» «formals»:⤷\nglobal State⤶«StatementBlock»«line»\n’
 Defobj [ _defobj ident Formals line1? lb line2? init+ rb line3?] = ‛\nclass «ident»:⤷\ndef __init__ (self,«Formals»):«line1»⤷«line2»«init»«line3»⤶⤶\n’
 StatementBlock [ line1? lb line2? Statement     line3? rb  line4?] = ‛«line1»«line2»⤷«Statement»«line3»«line4»⤶’
@@ -71,14 +63,18 @@ Call [_ lval rec?] = ‛«lval»()«rec»’
 Builtin [x line?] = ‛«x»«line»’
 BuiltinPhrase_popchar [_] = ‛chr(State.S.pop ())’
 BuiltinPhrase_pop [_] = ‛State.S.pop ()’
-BuiltinPhrase_push [_ lp exp rp] = ‛State.S.append («exp»)’
+BuiltinPhrase_push [_ lp exp rp] = ‛State.S.push («exp»)’
+BuiltinPhrase_stop [_] = ‛State.S[-1]’
 BuiltinPhrase_scanfor [_ lp want rp] = ‛
     found = ""
     while State.BUFP < len(State.BUFF):⤷
         x = State.BUFF[State.BUFP]
         State.BUFP += 1
-        if «want» == x:⤷
-            break⤶
+        if wanted == x:⤷
+            if 0 == len(found):⤷
+                continue⤶
+            else:⤷
+                break⤶⤶
         else:⤷
             found += x⤶⤶
     State.S.append(found)
@@ -95,10 +91,11 @@ BuiltinPhrase_freshdict [_] = ‛{}’
 BuiltinPhrase_isdigits [_ lp exp rp] = ‛«exp».isdigit()’
 BuiltinPhrase_toint [_ lp exp rp] = ‛int («exp»)’
 BuiltinPhrase_tofloat [_ lp exp rp] = ‛float («exp»)’
-BuiltinPhrase_isInteger [_ lp exp rp] = ‛re.match(r"^-?\d*$", word)’
-BuiltinPhrase_isFloat [_ lp exp rp] = ‛re.match(r"^-?\d*\.?\d*$", word)’
+BuiltinPhrase_isInteger [_ lp exp rp] = ‛re.match(r"^-?\\d*$", word)’
+BuiltinPhrase_isFloat [_ lp exp rp] = ‛re.match(r"^-?\d*\\.?\\d*$", word)’
 BuiltinPhrase_input [_] = ‛
-State.BUFF = input("OK ")
+#State.BUFF = input("OK ")
+State.BUFF = "7 ."
 State.BUFP = 0
 ’
 BuiltinPhrase_clearS [_] = ‛\nState.S.clear()’

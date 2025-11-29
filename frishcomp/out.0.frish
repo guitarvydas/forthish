@@ -212,7 +212,7 @@ defsubr xdoliteral "(literal)" {⎩195⎭
 ⎩212⎭
      "IP" is the current word index in a sequence of words being compiled. ⎩213⎭
 ⌉⎩214⎭
-    defsynonym lit ≡ RAM [IP]⎩215⎭
+    defsynonym lit ≡ State.RAM [State.IP]⎩215⎭
     %push (lit)⎩216⎭
     State.IP ⇐ State.IP + 1 ⌈ move past this item (the literal) - we're done with it ⌉⎩217⎭
 }⎩218⎭
@@ -226,7 +226,7 @@ deffunction literalize () {⎩220⎭
 defsubr xbranch "branch" {⎩226⎭
     ⌈ This instruction appears only inside subroutine sequences, jump to address in next cell ⌉⎩227⎭
     ⌈ This instruction is inserted into a subr sequence when compiling control-flow words, like "else" see below) ⌉⎩228⎭
-    IP ⇐ RAM [IP]⎩229⎭
+    State.IP ⇐ State.RAM [State.IP]⎩229⎭
     ⌈ normally, we just execute an instruction then move the IP sequentially forward by 1 unit, i.e. IP ⇐ IP + 1 ⌉⎩230⎭
     ⌈   in this case, though, we explicitly change the IP to some other value and don't just increment it ⌉⎩231⎭
 }⎩232⎭
@@ -237,7 +237,7 @@ defsubr x0branch "0branch" {⎩234⎭
     if (test) {⎩237⎭
         State.IP ⇐ State.IP + 1⎩238⎭
     } else {⎩239⎭
-        IP ⇐ RAM [IP]⎩240⎭
+       State.IP ⇐ State.RAM [State.IP]⎩240⎭
     }⎩241⎭
 }⎩242⎭
 ⎩243⎭
@@ -268,7 +268,7 @@ defsubr xif "if" { ⎩255⎭
 defimmediatesubr xelse "else" {⎩268⎭
     ⌈ Step. 1: fixup target1 from IF-true, retrieving memo from R-stack ⌉⎩269⎭
     deftemp target1 ⇐ %rpop⎩270⎭
-    RAM [target1] ⇐ %RAMnext⎩271⎭
+    State.RAM [target1] ⇐ %RAMnext⎩271⎭
     ⌈ Step. 2: generate unconditional branch for preceding IF, creating new memo for target2 on R-stack ⌉⎩272⎭
     deftemp brAddress ⇐ %funcall _find ("branch")⎩273⎭
     %rpush (%RAMnext) ⌈ target2 address on R-stack as memo for later fixup ⌉⎩274⎭
@@ -282,7 +282,7 @@ defimmediatesubr xelse "else" {⎩268⎭
 defimmediatesubr xthen "then" {⎩282⎭
     ⌈ Step. 1: fixup target (from IF or from ELSE, above), retrieving memo from R-stack ⌉⎩283⎭
     deftemp target ⇐ %rpop⎩284⎭
-    RAM [target] ⇐ %RAMnext⎩285⎭
+    State.RAM [target] ⇐ %RAMnext⎩285⎭
 }⎩286⎭
 ⎩287⎭
 defsubr x_do "(do)" {⎩288⎭
@@ -349,7 +349,7 @@ defsubr xconst "const" {⎩348⎭
     ⌈  get next word - the name - from BUFF ⌉⎩349⎭
     defsynonym blank ≡ 32⎩350⎭
     %push (blank)⎩351⎭
-    @word⎩352⎭
+    @xword⎩352⎭
     ⌈  stack is now: ( NNNN name -- ) ⌉⎩353⎭
     deftemp name ⇐ %pop⎩354⎭
     deftemp value ⇐ %pop⎩355⎭
@@ -359,13 +359,13 @@ defsubr xconst "const" {⎩348⎭
 }⎩359⎭
 ⎩360⎭
 deffunction doconst () {  ⌈ method for const ⌉⎩361⎭
-    defsynonym parameter ≡ RAM [W + 1]⎩362⎭
+    defsynonym parameter ≡ State.RAM [State.W + 1]⎩362⎭
     %push (parameter)⎩363⎭
 }⎩364⎭
 ⎩365⎭
 ⎩366⎭
 deffunction docreate () {⎩367⎭
-    defsynonym parameterAddress ≡ %funcall len (RAM) + 4⎩368⎭
+    defsynonym parameterAddress ≡ %funcall len (State.RAM) + 4⎩368⎭
     %push (parameterAddress)⎩369⎭
 }⎩370⎭
 deffunction create (name) {⎩371⎭
@@ -375,13 +375,13 @@ deffunction create (name) {⎩371⎭
 defsubr xcreate "create"{⎩375⎭
     defsynonym blank ≡ 32⎩376⎭
     %push (blank)⎩377⎭
-    @word⎩378⎭
+    @xword⎩378⎭
     deftemp name ⇐ %pop⎩379⎭
     %funcall create (name)⎩380⎭
 }⎩381⎭
 ⎩382⎭
 deffunction comma (value) {⎩383⎭
-    %funcall RAM.append (value)⎩384⎭
+    %funcall State.RAM.append (value)⎩384⎭
 }⎩385⎭
 ⎩386⎭
 defsubr xcomma "," {⎩387⎭
@@ -396,7 +396,7 @@ deffunction fvar (name, value) {⎩391⎭
 defsubr xvar "variable" {⎩396⎭
     defsynonym blank ≡ 32⎩397⎭
     %push (blank)⎩398⎭
-    @word⎩399⎭
+    @xword⎩399⎭
     deftemp name ⇐ %pop⎩400⎭
     deftemp value ⇐ %pop⎩401⎭
     %funcall fvar (name, value)    ⎩402⎭
@@ -407,10 +407,10 @@ defsubr xdump "dump" {⎩405⎭
     deftemp start ⇐ %toint (%pop)⎩407⎭
     %print ("----------------------------------------------------------------")⎩408⎭
     deftemp a ⇐ start⎩409⎭
-    while (a < start + (%funcall min (n, (%funcall len (RAM) - start)))) {⎩410⎭
+    while (a < start + (%funcall min (n, (%funcall len (State.RAM) - start)))) {⎩410⎭
         %print (a)⎩411⎭
 	%print (": ")⎩412⎭
-	%print (RAM [a])⎩413⎭
+	%print (State.RAM [a])⎩413⎭
 	%eol⎩414⎭
         deftemp a ⇐ a + 1⎩415⎭
     }⎩416⎭
@@ -419,7 +419,7 @@ defsubr xdump "dump" {⎩405⎭
 defsubr xstore"!" {⎩419⎭
     deftemp b ⇐ %pop⎩420⎭
     deftemp a ⇐ %pop⎩421⎭
-    RAM [b] ⇐ a⎩422⎭
+    State.RAM [b] ⇐ a⎩422⎭
 }⎩423⎭
 ⎩424⎭
 defsubr xbye "bye" { ⌈ ( --) Leave interpreter ⌉ %quit }⎩425⎭
@@ -427,13 +427,13 @@ defsubr xbye "bye" { ⌈ ( --) Leave interpreter ⌉ %quit }⎩425⎭
 ⎩427⎭
 deffunction _find (name) {⎩428⎭
     ⌈ "( name -- cfa|0) Find CFA of word name." ⌉⎩429⎭
-    deftemp x ⇐ LAST⎩430⎭
+    deftemp x ⇐ State.LAST⎩430⎭
     while (x >= 0) {⎩431⎭
         ⌈ ## print(f"-- {x} : {RAM[x]}, {RAM[x + 1]}")  # Debug. ⌉⎩432⎭
-        if (name = RAM[x + 1]) {  ⌈ # Match! ⌉⎩433⎭
+        if (name = State.RAM[x + 1]) {  ⌈ # Match! ⌉⎩433⎭
             return x + 3⎩434⎭
         } else {⎩435⎭
-            x ⇐ RAM[x]  ⌈ # Get next link. ⌉⎩436⎭
+            x ⇐ State.RAM[x]  ⌈ # Get next link. ⌉⎩436⎭
 	}⎩437⎭
     }⎩438⎭
     return 0  ⌈ # Nothing found. ⌉⎩439⎭
@@ -444,14 +444,14 @@ defsubr xfind "find" {⎩442⎭
     ⌈ 3 possible results: 1. (name 0) if not found, 2. (xt 1) if found and word is immediate, 3. (xt -1) if found and word is normal ⌉⎩444⎭
     %push (32)⎩445⎭
     @xword⎩446⎭
-    deftemp found ⇐ %funcall _find(S[-1])⎩447⎭
+    deftemp found ⇐ %funcall _find(%stop)⎩447⎭
     if (0 = found) {⎩448⎭
         %push (0)⎩449⎭
     } else {⎩450⎭
         %pop  ⌈ # Get rid of name on stack. ⌉⎩451⎭
         %push(found)⎩452⎭
         deftemp immediate ⇐ -1⎩453⎭
-        if (RAM[S[-1] - 1] & 1) { immediate ⇐ 1 }⎩454⎭
+        if (State.RAM[%stop - 1] & 1) { immediate ⇐ 1 }⎩454⎭
         %push(immediate)⎩455⎭
     }⎩456⎭
 }⎩457⎭
@@ -475,21 +475,21 @@ defsubr xnone "None" {⎩468⎭
   generalization?) ⌉⎩475⎭
 deffunction fvget (name) {⎩476⎭
     deftemp fobjaddress ⇐ %funcall _find(%pop)⎩477⎭
-    return RAM [fobjaddress + 1]⎩478⎭
+    return State.RAM [fobjaddress + 1]⎩478⎭
 }⎩479⎭
 ⎩480⎭
 deffunction fvset (name, v) {⎩481⎭
     deftemp fobjaddress ⇐ %funcall _find(%pop)⎩482⎭
-    defsynonym namefieldaddess ≡ fobjaddress + 1⎩483⎭
-    RAM [namefieldaddress] ⇐ v⎩484⎭
+    defsynonym namefieldaddress ≡ fobjaddress + 1⎩483⎭
+    State.RAM [namefieldaddress] ⇐ v⎩484⎭
 }⎩485⎭
 ⎩486⎭
 ⎩487⎭
 defsubr xwords "words" {⎩488⎭
     ⌈ print words in dictionary ⌉⎩489⎭
-    deftemp x ⇐ LAST⎩490⎭
+    deftemp x ⇐ State.LAST⎩490⎭
     while (x > -1) {⎩491⎭
-        %print (RAM [x+ 1])⎩492⎭
+        %print (State.RAM [x+ 1])⎩492⎭
 	%print (" ")⎩493⎭
     }⎩494⎭
     %eol⎩495⎭
@@ -561,7 +561,7 @@ defsubr xcolon ":" {⎩560⎭
     ⌈ ( name | --) Start compilation. ⌉⎩561⎭
     defsynonym blank ≡ 32⎩562⎭
     %push (blank)⎩563⎭
-    @word⎩564⎭
+    @xword⎩564⎭
     deftemp name ⇐ %pop⎩565⎭
     %funcall code(name, doword)⎩566⎭
     %setCompilingState⎩567⎭
@@ -585,8 +585,8 @@ defsubr xinterpret "interpret" {⎩577⎭
     deftemp result ⇐ %pop					    defsynonym foundImmediate ≡ (result = 1)⎩585⎭
     deftemp item ⇐ %pop					    defsynonym foundNormal ≡ (result = -1)⎩586⎭
     	    	   						    defsynonym notFound ≡ (result = 0)⎩587⎭
-    if (foundImmediate or foundNormal) {⎩588⎭
-	if %inCompilationState {				    defsynonym xt ≡ item⎩589⎭
+    if (foundImmediate or foundNormal) {		    	    defsynonym xt ≡ item⎩588⎭
+	if %inCompilationState {		⎩589⎭
 	    if foundImmediate {⎩590⎭
 		State.W ⇐ xt⎩591⎭
 		State.IP ⇐ -1  ⌈ Dummy to hold place in return stack. ⌉⎩592⎭
@@ -621,59 +621,36 @@ defsubr xinterpret "interpret" {⎩577⎭
     return True⎩621⎭
 }⎩622⎭
 ⎩623⎭
-⎩624⎭
-⎩625⎭
-⎩626⎭
-⎩627⎭
-⌈ Example of state-smart word, which Brodie sez not to do. Sorry, Leo... ⌉⎩628⎭
-⌈ This sin allows it to be used the same way compiling or interactive. ⌉⎩629⎭
-defimmediatesubr xquote "quote" {⎩630⎭
-    ⌈ ( -- string) Read up to closing quote, push to stack. ⌉⎩631⎭
-⎩632⎭
-    %push (34)⎩633⎭
-    @xword⎩634⎭
-    if 1 = %funcall fvget("state") {⎩635⎭
-        @literalize⎩636⎭
-    }⎩637⎭
-}⎩638⎭
-⎩639⎭
-⎩640⎭
-defimmediatesubr xcomment "(" {⎩641⎭
-    ⌈ ( --) Read up to close paren. ⌉⎩642⎭
-⎩643⎭
-    defsynonym rpar ≡ 41⎩644⎭
-    %push (rpar)⎩645⎭
-    @xword⎩646⎭
-    %pop⎩647⎭
-}⎩648⎭
-⎩649⎭
-⎩650⎭
-deffunction doliteral () {⎩651⎭
-    ⌈ Inside definitions only, pushes compiled literal to stack. ⌉⎩652⎭
-    %push (RAM[IP])  ⌈ Push item at IP on stack. ⌉⎩653⎭
-    State.IP ⇐ State.IP + 1          ⌈ Advance IP past item to continue execution. ⌉⎩654⎭
-}⎩655⎭
-⎩656⎭
-deffunction literalize () {⎩657⎭
-    ⌈ Compile literal into definition. ⌉⎩658⎭
-    %funcall RAM.append(_find("(literal)"))  ⌈ Compile address of doliteral. ⌉⎩659⎭
-    %funcall RAM.append(%pop)             ⌈ Compile literal value. ⌉⎩660⎭
-}⎩661⎭
-⎩662⎭
-⎩663⎭
-deffunction ok () {⎩664⎭
-    ⌈ ( --) Interaction loop -- REPL ⌉⎩665⎭
-    defsynonym blank ≡ 32⎩666⎭
-    while ⊤ {⎩667⎭
-        %input⎩668⎭
-        while not %empty-input {⎩669⎭
-           if (@xinterpret) {⎩670⎭
-	           %print (" ok")⎩671⎭
-		   %eol⎩672⎭
-	   }⎩673⎭
-        }⎩674⎭
-    }⎩675⎭
-}⎩676⎭
-⎩677⎭
-@ok⎩678⎭
-    ⎩679⎭
+deffunction ok () {⎩624⎭
+    ⌈ ( --) Interaction loop -- REPL ⌉⎩625⎭
+    defsynonym blank ≡ 32⎩626⎭
+    while ⊤ {⎩627⎭
+        %input⎩628⎭
+        while not %empty-input {⎩629⎭
+           if (@xinterpret) {⎩630⎭
+	           %print (" ok")⎩631⎭
+		   %eol⎩632⎭
+	   }⎩633⎭
+        }⎩634⎭
+    }⎩635⎭
+}⎩636⎭
+⎩637⎭
+deffunction debugok () {⎩638⎭
+    ⌈ ( --) Interaction loop -- REPL ⌉⎩639⎭
+    defsynonym blank ≡ 32⎩640⎭
+        %input⎩641⎭
+        while not %empty-input {⎩642⎭
+           if (@xinterpret) {⎩643⎭
+	           %print (" ok")⎩644⎭
+		   %eol⎩645⎭
+	   }⎩646⎭
+	   %print (State.BUFP) %print (" -- ") %print (State.BUFF) %eol⎩647⎭
+	   @xdots⎩648⎭
+        }⎩649⎭
+	   %print (State.BUFP) %print (" == ") %print (State.BUFF) %eol⎩650⎭
+	   @xdot⎩651⎭
+	   @xdots⎩652⎭
+}⎩653⎭
+⎩654⎭
+@debugok⎩655⎭
+    ⎩656⎭

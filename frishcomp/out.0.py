@@ -1,13 +1,5 @@
 import re
 
-S = None
-R = None
-RAM = None
-LAST = None
-IP = None
-BUFF = None
-BUFP = None
-
 class Stack(list):
     def push(my, *items):
         my.extend(items)
@@ -48,24 +40,24 @@ def xdrop ():
     global State                                       #line 15
     # ( a -- )                                         #line 16
     State.S.pop ()                                     #line 17#line 18#line 19
-    code("drop", xdrop, 0)
+code("drop",0,  xdrop)
 
 def xdup ():
     global State                                       #line 20
     # ( a -- a a )                                     #line 21
 
     A = State.S.pop ()                                 #line 22
-    State.S.append ( A)                                #line 23
-    State.S.append ( A)                                #line 24#line 25#line 26
-    code("dup", xdup, 0)
+    State.S.push ( A)                                  #line 23
+    State.S.push ( A)                                  #line 24#line 25#line 26
+code("dup",0,  xdup)
 
 def xnegate ():
     global State                                       #line 27
     # ( n -- (-n) )                                    #line 28
 
     n = State.S.pop ()                                 #line 29
-    State.S.append ( -n)                               #line 30#line 31#line 32
-    code("negate", xnegate, 0)
+    State.S.push ( -n)                                 #line 30#line 31#line 32
+code("negate",0,  xnegate)
 
 def xemit ():
     global State                                       #line 33
@@ -73,26 +65,26 @@ def xemit ():
 
     c = State.S.pop ()                                 #line 35
     print (chr (int ( c)), end="")                     #line 36#line 37#line 38
-    code("emit", xemit, 0)
+code("emit",0,  xemit)
 
 def xcr ():
     global State
     print ()                                           #line 39
-    code("cr", xcr, 0)
+code("cr",0,  xcr)
 
 def xdot ():
     global State
     # ( n --) Print TOS
     print (State.S.pop (), end="")
     print ()                                           #line 40
-    code(".", xdot, 0)
+code(".",0,  xdot)
 
 def xdots ():
     global State
     # ( --) Print stack contents
     print (State.S, end="")
     print ()                                           #line 41#line 42
-    code(".s", xdots, 0)
+code(".s",0,  xdots)
 
 def xadd ():
     global State                                       #line 43
@@ -101,8 +93,8 @@ def xadd ():
     B = State.S.pop ()                                 #line 45
 
     A = State.S.pop ()                                 #line 46
-    State.S.append ( A+ B)                             #line 47#line 48#line 49
-    code("+", xadd, 0)
+    State.S.push ( A+ B)                               #line 47#line 48#line 49
+code("+",0,  xadd)
 
 def xmul ():
     global State                                       #line 50
@@ -111,8 +103,8 @@ def xmul ():
     B = State.S.pop ()                                 #line 52
 
     A = State.S.pop ()                                 #line 53
-    State.S.append ( A* B)                             #line 54#line 55#line 56
-    code("*", xmul, 0)
+    State.S.push ( A* B)                               #line 54#line 55#line 56
+code("*",0,  xmul)
 
 def xeq ():
     global State                                       #line 57
@@ -121,8 +113,8 @@ def xeq ():
     B = State.S.pop ()                                 #line 59
 
     A = State.S.pop ()                                 #line 60
-    State.S.append ( A ==  B)                          #line 61#line 62#line 63
-    code("=", xeq, 0)
+    State.S.push ( A ==  B)                            #line 61#line 62#line 63
+code("=",0,  xeq)
 
 def xlt ():
     global State                                       #line 64
@@ -131,8 +123,8 @@ def xlt ():
     B = State.S.pop ()                                 #line 66
 
     A = State.S.pop ()                                 #line 67
-    State.S.append ( A <  B)                           #line 68#line 69#line 70
-    code("<", xlt, 0)
+    State.S.push ( A <  B)                             #line 68#line 69#line 70
+code("<",0,  xlt)
 
 def xgt ():
     global State                                       #line 71
@@ -141,40 +133,40 @@ def xgt ():
     B = State.S.pop ()                                 #line 73
 
     A = State.S.pop ()                                 #line 74
-    State.S.append ( A >  B)                           #line 75#line 76#line 77
-    code(">", xgt, 0)
+    State.S.push ( A >  B)                             #line 75#line 76#line 77
+code(">",0,  xgt)
 
 def xeq0 ():
     global State                                       #line 78
     # ( a -- bool )                                    #line 79
 
     a = State.S.pop ()                                 #line 80
-    State.S.append ( a ==  0)                          #line 81#line 82#line 83
-    code("0=", xeq0, 0)
+    State.S.push ( a ==  0)                            #line 81#line 82#line 83
+code("0=",0,  xeq0)
 
 def x0lt ():
     global State                                       #line 84
     # ( a -- bool )                                    #line 85
 
     a = State.S.pop ()                                 #line 86
-    State.S.append ( 0 <  a)                           #line 87#line 88#line 89
-    code("0<", x0lt, 0)
+    State.S.push ( 0 <  a)                             #line 87#line 88#line 89
+code("0<",0,  x0lt)
 
 def x0gt ():
     global State                                       #line 90
     # ( a -- bool )                                    #line 91
 
     a = State.S.pop ()                                 #line 92
-    State.S.append ( 0 >  a)                           #line 93#line 94#line 95
-    code("0>", x0gt, 0)
+    State.S.push ( 0 >  a)                             #line 93#line 94#line 95
+code("0>",0,  x0gt)
 
 def xnot ():
     global State                                       #line 96
     # ( a -- bool )                                    #line 97
 
     a = State.S.pop ()                                 #line 98
-    State.S.append (not  a)                            #line 99#line 100#line 101
-    code("not", xnot, 0)
+    State.S.push (not  a)                              #line 99#line 100#line 101
+code("not",0,  xnot)
 
 def xand ():
     global State                                       #line 102
@@ -183,8 +175,8 @@ def xand ():
     b = State.S.pop ()                                 #line 104
 
     a = State.S.pop ()                                 #line 105
-    State.S.append ( a and  b)                         #line 106#line 107#line 108
-    code("and", xand, 0)
+    State.S.push ( a and  b)                           #line 106#line 107#line 108
+code("and",0,  xand)
 
 def xor ():
     global State                                       #line 109
@@ -193,8 +185,8 @@ def xor ():
     b = State.S.pop ()                                 #line 111
 
     a = State.S.pop ()                                 #line 112
-    State.S.append ( a or  b)                          #line 113#line 114#line 115
-    code("or", xor, 0)
+    State.S.push ( a or  b)                            #line 113#line 114#line 115
+code("or",0,  xor)
 
 def xStoR ():
     global State                                       #line 116
@@ -202,39 +194,39 @@ def xStoR ():
 
     a = State.S.pop ()                                 #line 118
     State.R.append ( a)                                #line 119#line 120#line 121
-    code(">r", xStoR, 0)
+code(">r",0,  xStoR)
 
 def xRtoS ():
     global State                                       #line 122
     # ( -- x )                                         #line 123
 
     x = State.R.pop ()                                 #line 124
-    State.S.append ( x)                                #line 125#line 126#line 127
-    code("r>", xRtoS, 0)
+    State.S.push ( x)                                  #line 125#line 126#line 127
+code("r>",0,  xRtoS)
 
 def xi ():
     global State                                       #line 128
     # ( -- i ) get current loop index from R stack     #line 129
 
     i = State.R [-1]                                   #line 130
-    State.S.append ( i)                                #line 131#line 132#line 133
-    code("i", xi, 0)
+    State.S.push ( i)                                  #line 131#line 132#line 133
+code("i",0,  xi)
 
 def xi ():
     global State                                       #line 134
     # ( -- i ) get outer loop limit from R stack       #line 135
 
     i = State.R [-2]                                   #line 136
-    State.S.append ( i)                                #line 137#line 138#line 139
-    code("i'", xi, 0)
+    State.S.push ( i)                                  #line 137#line 138#line 139
+code("i'",0,  xi)
 
 def xj ():
     global State                                       #line 140
     # ( -- j ) get outer loop index from R stack       #line 141
 
     j = State.R [-3]                                   #line 142
-    State.S.append ( j)                                #line 143#line 144#line 145
-    code("j", xj, 0)
+    State.S.push ( j)                                  #line 143#line 144#line 145
+code("j",0,  xj)
 
 def xswap ():
     global State                                       #line 146
@@ -243,9 +235,9 @@ def xswap ():
     B = State.S.pop ()                                 #line 148
 
     A = State.S.pop ()                                 #line 149
-    State.S.append ( B)                                #line 150
-    State.S.append ( A)                                #line 151#line 152
-    code("swap", xswap, 0)
+    State.S.push ( B)                                  #line 150
+    State.S.push ( A)                                  #line 151#line 152
+code("swap",0,  xswap)
 
 def xsub ():
     global State                                       #line 153
@@ -254,8 +246,8 @@ def xsub ():
     B = State.S.pop ()                                 #line 155
 
     A = State.S.pop ()                                 #line 156
-    State.S.append ( A- B)                             #line 157#line 158
-    code("-", xsub, 0)
+    State.S.push ( A- B)                               #line 157#line 158
+code("-",0,  xsub)
 
 def xdiv ():
     global State                                       #line 159
@@ -266,7 +258,7 @@ def xdiv ():
 
     A = State.S.pop ()                                 #line 163
     State.S.append( B [A])                             #line 164#line 165#line 166
-    code("/", xdiv, 0)
+code("/",0,  xdiv)
 
 def xword ():
     global State                                       #line 167
@@ -279,12 +271,15 @@ def xword ():
         x = State.BUFF[State.BUFP]
         State.BUFP += 1
         if wanted == x:
-            break
+            if 0 == len(found):
+                continue
+            else:
+                break
         else:
             found += x
     State.S.append(found)
                                                        #line 170#line 171#line 172
-    code("word", xword, 0)
+code("word",0,  xword)
 
 # Example of state-smart word, which Brodie sez not to do. Sorry, Leo... #line 173
 # This sin allows it to be used the same way compiling or interactive. #line 174
@@ -295,18 +290,18 @@ def xquote ():
     # E.G. " abc"                                      #line 178
 
     DQ =  34                                           #line 179
-    State.S.append ( DQ)                               #line 180
+    State.S.push ( DQ)                                 #line 180
     xword()                                            #line 181
     if State.compiling:                                #line 182
         literalize()                                   #line 183#line 184#line 185#line 186
-    code("'", xquote, 0)
+code("'",0,  xquote)
 
 def xdotquote ():
     global State                                       #line 187
     # ( --) Print string.                              #line 188
     xquote()                                           #line 189
     print (State.S.pop (), end="")                     #line 190#line 191#line 192
-    code(".'", xdotquote, 0)
+code(".'",0,  xdotquote)
                                                        #line 193#line 194
 def xdoliteral ():
     global State                                       #line 195
@@ -330,11 +325,11 @@ def xdoliteral ():
     #     "IP" is the current word index in a sequence of words being compiled. ⎩213⎭
     #                                                  #line 214
 
-    lit =  RAM [ IP]                                   #line 215
-    State.S.append ( lit)                              #line 216
+    lit =  State.RAM [ State.IP]                       #line 215
+    State.S.push ( lit)                                #line 216
     State.IP =  State.IP+ 1
     # move past this item (the literal) - we're done with it #line 217#line 218#line 219
-    code("(literal)", xdoliteral, 0)
+code("(literal)",0,  xdoliteral)
 
 def literalize ():
     global State                                       #line 220
@@ -348,10 +343,10 @@ def xbranch ():
     global State                                       #line 226
     # This instruction appears only inside subroutine sequences, jump to address in next cell #line 227
     # This instruction is inserted into a subr sequence when compiling control-flow words, like "else" see below) #line 228
-    IP =  RAM [ IP]                                    #line 229
+    State.IP =  State.RAM [ State.IP]                  #line 229
     # normally, we just execute an instruction then move the IP sequentially forward by 1 unit, i.e. IP ⇐ IP + 1 #line 230
     #   in this case, though, we explicitly change the IP to some other value and don't just increment it #line 231#line 232#line 233
-    code("branch", xbranch, 0)
+code("branch",0,  xbranch)
 
 def x0branch ():
     global State                                       #line 234
@@ -361,8 +356,8 @@ def x0branch ():
     if ( test):                                        #line 237
         State.IP =  State.IP+ 1                        #line 238
     else:                                              #line 239
-        IP =  RAM [ IP]                                #line 240#line 241#line 242#line 243
-    code("0branch", x0branch, 0)
+        State.IP =  State.RAM [ State.IP]              #line 240#line 241#line 242#line 243
+code("0branch",0,  x0branch)
                                                        #line 244
 # "immediate" words are fully operational even when in compile mode. Some (not all) of these words are meant to⎩245⎭
 #    work /only/ in compile mode. At the REPL prompt ("interpret" mode), they produce unwanted results.⎩246⎭
@@ -388,7 +383,7 @@ def xif ():
     # branch target will be fixed up later             #line 262
     # Step. 2: generate code for true branch - return to compiler which will compile the following words #line 263
     # THEN or ELSE will do the fixup of target1        #line 264#line 265#line 266
-    code("if", xif, 0)
+code("if",0,  xif)
 
 # see diagram `compiling-IF-ELSE-THEN.drawio.png`      #line 267
 def xelse ():
@@ -396,7 +391,7 @@ def xelse ():
     # Step. 1: fixup target1 from IF-true, retrieving memo from R-stack #line 269
 
     target1 = State.R.pop ()                           #line 270
-    RAM [ target1] = len (Stack.RAM)                   #line 271
+    State.RAM [ target1] = len (Stack.RAM)             #line 271
     # Step. 2: generate unconditional branch for preceding IF, creating new memo for target2 on R-stack #line 272
 
     brAddress =  _find( "branch")                      #line 273
@@ -408,7 +403,7 @@ def xelse ():
     # branch target will be fixed up later             #line 276
     # Step. 3: generate code for false branch - return to compiler which will compile the following words #line 277
     # THEN will do the fixup of target2                #line 278#line 279#line 280
-    code("else", xelse, 1)
+code("else", 1, xelse)
 
 # see diagrams `compiling-IF-THEN.drawio.png` and `compiling-IF-ELSE-THEN.drawio.png` #line 281
 def xthen ():
@@ -416,8 +411,8 @@ def xthen ():
     # Step. 1: fixup target (from IF or from ELSE, above), retrieving memo from R-stack #line 283
 
     target = State.R.pop ()                            #line 284
-    RAM [ target] = len (Stack.RAM)                    #line 285#line 286#line 287
-    code("then", xthen, 1)
+    State.RAM [ target] = len (Stack.RAM)              #line 285#line 286#line 287
+code("then", 1, xthen)
 
 def x_do ():
     global State                                       #line 288
@@ -429,7 +424,7 @@ def x_do ():
     limit = State.S.pop ()                             #line 292
     State.R.append ( index)                            #line 293
     State.R.append ( limit)                            #line 294#line 295#line 296
-    code("(do)", x_do, 0)
+code("(do)",0,  x_do)
 
 def xdo ():
     global State                                       #line 297
@@ -438,7 +433,7 @@ def xdo ():
     # Push do loop handler.                            #line 299
     State.R.append (len (Stack.RAM))
     # Push address to jump back to.                    #line 300#line 301#line 302
-    code("xdo", xdo, 1)
+code("xdo", 1, xdo)
 
 def x_loop ():
     global State                                       #line 303
@@ -449,12 +444,12 @@ def x_loop ():
     limit = State.R.pop ()                             #line 306
 
     cond = ( index >=  limit)                          #line 307
-    State.S.append ( cond)                             #line 308
+    State.S.push ( cond)                               #line 308
     if ( cond):
         # clean up rstack if index >= limit            #line 309
         State.R.pop ()                                 #line 310
         State.R.pop ()                                 #line 311#line 312#line 313#line 314
-    code("(loop)", x_loop, 0)
+code("(loop)",0,  x_loop)
 
 def xploop ():
     global State                                       #line 315
@@ -465,12 +460,12 @@ def xploop ():
     # Compile in branch check.                         #line 318
     Stack.RAM.append(State.R.pop ())
     # Address to jump back to.                         #line 319#line 320#line 321
-    code("+loop", xploop, 1)
+code("+loop", 1, xploop)
 
 def xloop ():
     global State                                       #line 322
     # (  --) Close counted loop.                       #line 323
-    State.S.append ( 1)                                #line 324
+    State.S.push ( 1)                                  #line 324
     literalize()
     # Default loop increment for x_loop.               #line 325
     Stack.RAM.append( _find( "(loop)"))
@@ -479,13 +474,13 @@ def xloop ():
     # Compile in branch check.                         #line 327
     Stack.RAM.append(State.R.pop ())
     # Address to jump back to.                         #line 328#line 329#line 330
-    code("xloop", xloop, 1)
+code("xloop", 1, xloop)
 
 def xbegin ():
     global State                                       #line 331
     State.R.append (len (Stack.RAM))
     # ( --) Start indefinite loop.                     #line 332#line 333#line 334
-    code("begin", xbegin, 1)
+code("begin", 1, xbegin)
 
 def xuntil ():
     global State                                       #line 335
@@ -494,7 +489,7 @@ def xuntil ():
     # Expects result of test on stack.                 #line 337
     Stack.RAM.append(State.R.pop ())
     # Address to jump back to.                         #line 338#line 339#line 340
-    code("until", xuntil, 1)
+code("until", 1, xuntil)
                                                        #line 341#line 342
 #  "... 123 constant K ..."                            #line 343
 #  at interpretation time: 123 is on the Stack, we have consumed "constant" from BUFF, BUFF now contains "K ..." #line 344
@@ -506,8 +501,8 @@ def xconst ():
     #  get next word - the name - from BUFF            #line 349
 
     blank =  32                                        #line 350
-    State.S.append ( blank)                            #line 351
-    word()                                             #line 352
+    State.S.push ( blank)                              #line 351
+    xword()                                            #line 352
     #  stack is now: ( NNNN name -- )                  #line 353
 
     name = State.S.pop ()                              #line 354
@@ -518,20 +513,20 @@ def xconst ():
 
     fobj =  code( name, normal, doconst)               #line 357
     Stack.RAM.append( value)                           #line 358#line 359#line 360
-    code("const", xconst, 0)
+code("const",0,  xconst)
 
 def doconst ():
     global State
     # method for const                                 #line 361
 
-    parameter =  RAM [ W+ 1]                           #line 362
-    State.S.append ( parameter)                        #line 363#line 364#line 365
+    parameter =  State.RAM [ State.W+ 1]               #line 362
+    State.S.push ( parameter)                          #line 363#line 364#line 365
                                                        #line 366
 def docreate ():
     global State                                       #line 367
 
-    parameterAddress =  len( RAM)+ 4                   #line 368
-    State.S.append ( parameterAddress)                 #line 369#line 370
+    parameterAddress =  len( State.RAM)+ 4             #line 368
+    State.S.push ( parameterAddress)                   #line 369#line 370
 
 def create (name):
     global State                                       #line 371
@@ -543,21 +538,21 @@ def xcreate ():
     global State                                       #line 375
 
     blank =  32                                        #line 376
-    State.S.append ( blank)                            #line 377
-    word()                                             #line 378
+    State.S.push ( blank)                              #line 377
+    xword()                                            #line 378
 
     name = State.S.pop ()                              #line 379
     create( name)                                      #line 380#line 381#line 382
-    code("create", xcreate, 0)
+code("create",0,  xcreate)
 
 def comma (value):
     global State                                       #line 383
-    RAM.append( value)                                 #line 384#line 385#line 386
+    State.RAM.append( value)                           #line 384#line 385#line 386
 
 def xcomma ():
     global State                                       #line 387
     comma(State.S.pop ())                              #line 388#line 389#line 390
-    code(",", xcomma, 0)
+code(",",0,  xcomma)
 
 def fvar (name,value):
     global State                                       #line 391
@@ -568,14 +563,14 @@ def xvar ():
     global State                                       #line 396
 
     blank =  32                                        #line 397
-    State.S.append ( blank)                            #line 398
-    word()                                             #line 399
+    State.S.push ( blank)                              #line 398
+    xword()                                            #line 399
 
     name = State.S.pop ()                              #line 400
 
     value = State.S.pop ()                             #line 401
     fvar( name, value)                                 #line 402#line 403#line 404
-    code("variable", xvar, 0)
+code("variable",0,  xvar)
 
 def xdump ():
     global State                                       #line 405
@@ -586,14 +581,14 @@ def xdump ():
     print ( "----------------------------------------------------------------", end="")#line 408
 
     a =  start                                         #line 409
-    while ( a <  start+( min( n,( len( RAM)- start)))):#line 410
+    while ( a <  start+( min( n,( len( State.RAM)- start)))):#line 410
         print ( a, end="")                             #line 411
         print ( ": ", end="")                          #line 412
-        print ( RAM [ a], end="")                      #line 413
+        print ( State.RAM [ a], end="")                #line 413
         print ()                                       #line 414
 
         a =  a+ 1                                      #line 415#line 416#line 417#line 418
-    code("dump", xdump, 0)
+code("dump",0,  xdump)
 
 def xstore ():
     global State                                       #line 419
@@ -601,28 +596,28 @@ def xstore ():
     b = State.S.pop ()                                 #line 420
 
     a = State.S.pop ()                                 #line 421
-    RAM [ b] =  a                                      #line 422#line 423#line 424
-    code("!", xstore, 0)
+    State.RAM [ b] =  a                                #line 422#line 423#line 424
+code("!",0,  xstore)
 
 def xbye ():
     global State
     # ( --) Leave interpreter
 
     raise SystemExit                                   #line 425#line 426
-    code("bye", xbye, 0)
+code("bye",0,  xbye)
                                                        #line 427
 def _find (name):
     global State                                       #line 428
     # "( name -- cfa|0) Find CFA of word name."        #line 429
 
-    x =  LAST                                          #line 430
+    x =  State.LAST                                    #line 430
     while ( x >=  0):                                  #line 431
         # ## print(f"-- {x} : {RAM[x]}, {RAM[x + 1]}")  # Debug. #line 432
-        if ( name ==  RAM [ x+ 1]):
+        if ( name ==  State.RAM [ x+ 1]):
             # # Match!                                 #line 433
             return  x+ 3                               #line 434
         else:                                          #line 435
-            x =  RAM [ x]
+            x =  State.RAM [ x]
             # # Get next link.                         #line 436#line 437#line 438
     return  0
     # # Nothing found.                                 #line 439#line 440#line 441
@@ -631,40 +626,40 @@ def xfind ():
     global State                                       #line 442
     # "( name | -- (name 0)|(xt 1)|(xt -1)) Search for word name." #line 443
     # 3 possible results: 1. (name 0) if not found, 2. (xt 1) if found and word is immediate, 3. (xt -1) if found and word is normal #line 444
-    State.S.append ( 32)                               #line 445
+    State.S.push ( 32)                                 #line 445
     xword()                                            #line 446
 
-    found =  _find( S [ -1])                           #line 447
+    found =  _find(State.S[-1])                        #line 447
     if ( 0 ==  found):                                 #line 448
-        State.S.append ( 0)                            #line 449
+        State.S.push ( 0)                              #line 449
     else:                                              #line 450
         State.S.pop ()
         # # Get rid of name on stack.                  #line 451
-        State.S.append ( found)                        #line 452
+        State.S.push ( found)                          #line 452
 
         immediate =  -1                                #line 453
-        if ( RAM [ S [ -1]- 1] &  1):
+        if ( State.RAM [State.S[-1]- 1] &  1):
             immediate =  1                             #line 454
-        State.S.append ( immediate)                    #line 455#line 456#line 457#line 458
-    code("find", xfind, 0)
+        State.S.push ( immediate)                      #line 455#line 456#line 457#line 458
+code("find",0,  xfind)
 
 def xtick ():
     global State                                       #line 459
     # "( name -- xt|-1) Search for execution token of word name." #line 460
-    State.S.append ( 32)                               #line 461
+    State.S.push ( 32)                                 #line 461
     xword()                                            #line 462
 
     name = State.S.pop ()                              #line 463
 
     found =  _find( name)                              #line 464
-    State.S.append ( found)                            #line 465#line 466#line 467
-    code("'", xtick, 0)
+    State.S.push ( found)                              #line 465#line 466#line 467
+code("'",0,  xtick)
 
 def xnone ():
     global State                                       #line 468
 
     State.S.append (None)                              #line 469#line 470#line 471
-    code("None", xnone, 0)
+code("None",0,  xnone)
 
 # fvget and fvset assume that the forth object (word) is a set of contiguous slots, each 1 machine word wide⎩472⎭
 #  these functions use direct integer offsets to access the fields of the fojbect, whereas in higher level languages⎩473⎭
@@ -674,26 +669,26 @@ def fvget (name):
     global State                                       #line 476
 
     fobjaddress =  _find(State.S.pop ())               #line 477
-    return  RAM [ fobjaddress+ 1]                      #line 478#line 479#line 480
+    return  State.RAM [ fobjaddress+ 1]                #line 478#line 479#line 480
 
 def fvset (name,v):
     global State                                       #line 481
 
     fobjaddress =  _find(State.S.pop ())               #line 482
 
-    namefieldaddess =  fobjaddress+ 1                  #line 483
-    RAM [ namefieldaddress] =  v                       #line 484#line 485#line 486
+    namefieldaddress =  fobjaddress+ 1                 #line 483
+    State.RAM [ namefieldaddress] =  v                 #line 484#line 485#line 486
                                                        #line 487
 def xwords ():
     global State                                       #line 488
     # print words in dictionary                        #line 489
 
-    x =  LAST                                          #line 490
+    x =  State.LAST                                    #line 490
     while ( x >  -1):                                  #line 491
-        print ( RAM [ x+ 1], end="")                   #line 492
+        print ( State.RAM [ x+ 1], end="")             #line 492
         print ( " ", end="")                           #line 493#line 494
     print ()                                           #line 495#line 496#line 497
-    code("words", xwords, 0)
+code("words",0,  xwords)
                                                        #line 498
 def xexecute ():
     global State                                       #line 499
@@ -701,7 +696,7 @@ def xexecute ():
 
     wordAddress = State.S.pop ()                       #line 501
     wordAddress()                                      #line 502#line 503#line 504
-    code("execute", xexecute, 0)
+code("execute",0,  xexecute)
                                                        #line 505
 def doword ():
     global State                                       #line 506
@@ -760,13 +755,13 @@ def xcolon ():
     # ( name | --) Start compilation.                  #line 561
 
     blank =  32                                        #line 562
-    State.S.append ( blank)                            #line 563
-    word()                                             #line 564
+    State.S.push ( blank)                              #line 563
+    xword()                                            #line 564
 
     name = State.S.pop ()                              #line 565
     code( name, doword)                                #line 566
     State.compiling = True                             #line 567#line 568#line 569
-    code(":", xcolon, 0)
+code(":",0,  xcolon)
 
 def xsemi ():
     global State                                       #line 570
@@ -774,7 +769,7 @@ def xsemi ():
     State.RAM.append( -1)
     # Marker for end of definition.                    #line 573
     State.compiling = False                            #line 574#line 575#line 576
-    code(";", xsemi, 1)
+code(";", 1, xsemi)
 
 def xinterpret ():
     global State                                       #line 577
@@ -794,10 +789,10 @@ def xinterpret ():
     foundNormal = ( result ==  -1)                     #line 586
 
     notFound = ( result ==  0)                         #line 587
-    if ( foundImmediate or  foundNormal):              #line 588
-        if State.compiling:
+    if ( foundImmediate or  foundNormal):
 
-            xt =  item                                 #line 589
+        xt =  item                                     #line 588
+        if State.compiling:                            #line 589
             if  foundImmediate:                        #line 590
                 State.W =  xt                          #line 591
                 State.IP =  -1
@@ -812,12 +807,12 @@ def xinterpret ():
     else:
 
         word =  item                                   #line 601
-        if (re.match(r"^-?d*$", word)):                #line 602
-            State.S.append (int ( word))               #line 603
+        if (re.match(r"^-?\d*$", word)):               #line 602
+            State.S.push (int ( word))                 #line 603
             if State.compiling:                        #line 604
                 literalize()                           #line 605#line 606
-        elif (re.match(r"^-?d*.?d*$", word)):          #line 607
-            State.S.append (float ( word))             #line 608
+        elif (re.match(r"^-?d*\.?\d*$", word)):        #line 607
+            State.S.push (float ( word))               #line 608
             if State.compiling:                        #line 609
                 literalize()                           #line 610#line 611
         else:                                          #line 612
@@ -830,57 +825,47 @@ def xinterpret ():
             print ()                                   #line 617
             return  False                              #line 618#line 619#line 620
     return  True                                       #line 621#line 622#line 623
-    code("interpret", xinterpret, 0)
-                                                       #line 624#line 625#line 626#line 627
-# Example of state-smart word, which Brodie sez not to do. Sorry, Leo... #line 628
-# This sin allows it to be used the same way compiling or interactive. #line 629
-def xquote ():
-    global State                                       #line 630
-    # ( -- string) Read up to closing quote, push to stack. #line 631#line 632
-    State.S.append ( 34)                               #line 633
-    xword()                                            #line 634
-    if  1 ==  fvget( "state"):                         #line 635
-        literalize()                                   #line 636#line 637#line 638#line 639
-    code("quote", xquote, 1)
-                                                       #line 640
-def xcomment ():
-    global State                                       #line 641
-    # ( --) Read up to close paren.                    #line 642#line 643
+code("interpret",0,  xinterpret)
 
-    rpar =  41                                         #line 644
-    State.S.append ( rpar)                             #line 645
-    xword()                                            #line 646
-    State.S.pop ()                                     #line 647#line 648#line 649
-    code("(", xcomment, 1)
-                                                       #line 650
-def doliteral ():
-    global State                                       #line 651
-    # Inside definitions only, pushes compiled literal to stack. #line 652
-    State.S.append ( RAM [ IP])
-    # Push item at IP on stack.                        #line 653
-    State.IP =  State.IP+ 1
-    # Advance IP past item to continue execution.      #line 654#line 655#line 656
-
-def literalize ():
-    global State                                       #line 657
-    # Compile literal into definition.                 #line 658
-    RAM.append( _find( "(literal)"))
-    # Compile address of doliteral.                    #line 659
-    RAM.append(State.S.pop ())
-    # Compile literal value.                           #line 660#line 661#line 662
-                                                       #line 663
 def ok ():
-    global State                                       #line 664
-    # ( --) Interaction loop -- REPL                   #line 665
+    global State                                       #line 624
+    # ( --) Interaction loop -- REPL                   #line 625
 
-    blank =  32                                        #line 666
-    while  True:                                       #line 667
+    blank =  32                                        #line 626
+    while  True:                                       #line 627
 
-        State.BUFF = input("OK ")
+        #State.BUFF = input("OK ")
+        State.BUFF = "7 ."
         State.BUFP = 0
-                                                       #line 668
-        while not (State.BUFP >= len(State.BUFF)):     #line 669
-            if ( xinterpret()):                        #line 670
-                print ( " ok", end="")                 #line 671
-                print ()                               #line 672#line 673#line 674#line 675#line 676#line 677
-ok()                                                   #line 678#line 679
+                                                       #line 628
+        while not (State.BUFP >= len(State.BUFF)):     #line 629
+            if ( xinterpret()):                        #line 630
+                print ( " ok", end="")                 #line 631
+                print ()                               #line 632#line 633#line 634#line 635#line 636#line 637
+
+def debugok ():
+    global State                                       #line 638
+    # ( --) Interaction loop -- REPL                   #line 639
+
+    blank =  32                                        #line 640
+
+    #State.BUFF = input("OK ")
+    State.BUFF = "7 ."
+    State.BUFP = 0
+                                                       #line 641
+    while not (State.BUFP >= len(State.BUFF)):         #line 642
+        if ( xinterpret()):                            #line 643
+            print ( " ok", end="")                     #line 644
+            print ()                                   #line 645#line 646
+        print ( State.BUFP, end="")
+        print ( " -- ", end="")
+        print ( State.BUFF, end="")
+        print ()                                       #line 647
+        xdots()                                        #line 648#line 649
+    print ( State.BUFP, end="")
+    print ( " == ", end="")
+    print ( State.BUFF, end="")
+    print ()                                           #line 650
+    xdot()                                             #line 651
+    xdots()                                            #line 652#line 653#line 654
+debugok()                                              #line 655#line 656

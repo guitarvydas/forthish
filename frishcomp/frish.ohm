@@ -47,6 +47,7 @@ frish {
      | "%popchar" -- popchar
      | "%pop" -- pop
      | "%push" "(" Exp ")" -- push
+     | "%stop" -- stop
      | "%scanfor" "(" ident ")" -- scanfor
      | "%assoc" "(" ident "," string "," Subraddress ")" -- assoc
      | "%eol" -- eol
