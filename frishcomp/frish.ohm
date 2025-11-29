@@ -70,6 +70,7 @@ frish {
      | "%rpop" -- rpop
      | "%rpush" "(" Exp ")" -- rpush
      | "%rtop" -- rtop
+     | "%rsecond" -- rsecond
      | "%rthird" -- rthird
 
      | "%toboolean" "(" Exp ")" -- toboolean

@@ -87,7 +87,7 @@ defsubr x0lt "0<"  {
     %push (0 < a)
 }
 
-defsubr x0gt "0>{
+defsubr x0gt "0>" {
     ⌈ ( a -- bool ) ⌉
     deftemp a ⇐ %pop
     %push (0 > a)
@@ -219,8 +219,8 @@ defsubr xdoliteral "(literal)" {
 
 deffunction literalize () {
     ⌈ Compile literal into definition. ⌉
-    Stack.RAM.append(%funcall _find ("(literal)"))  ⌈# Compile address of doliteral. ⌉
-    Stack.RAM.append(%pop)             ⌈ # Compile literal value. ⌉
+    %funcall Stack.RAM.append(%funcall _find ("(literal)"))  ⌈# Compile address of doliteral. ⌉
+    %funcall Stack.RAM.append(%pop)             ⌈ # Compile literal value. ⌉
 }
 
 defsubr xbranch "branch" {
@@ -252,7 +252,7 @@ defsubr x0branch "0branch" {
 ⌈ IF, ELSE and THEN are "immediate" words - they should only be used inside of ":" (colon compiler) ⌉
 
 ⌈ see diagram `compiling-IF-THEN.drawio.png` ⌉
-defsubr xif { 
+defsubr xif "if" { 
     %immediate ⌈ This instruction appears only inside subroutine sequences, ( f -- ) compile if test and branchFalse ⌉ 
     ⌈ Step. 1: generate conditional branch to yet-unknown target1 ⌉ 
     deftemp branchFalseAddress ⇐ %funcall _find ("0branch")
@@ -296,35 +296,36 @@ defsubr x_do "(do)" {
 
 defimmediatesubr xdo "xdo" {
     ⌈ (  limit index --) Begin counted loop. ⌉
-    Stack.RAM.append(%funcall _find("(do)"))  ⌈ Push do loop handler. ⌉
+    %funcall Stack.RAM.append(%funcall _find("(do)"))  ⌈ Push do loop handler. ⌉
     %rpush(%RAMnext)           ⌈ Push address to jump back to. ⌉
 }
 
-===================
 defsubr x_loop "(loop)" {
     ⌈ (  -- f) Determine if loop is done. ⌉
-    deftemp limit ⇐ %pop
-    deftemp index ⇐ %pop
-    R[-1] += %pop             ⌈ Increment index. ⌉
-    %push(R[-1] >= R[-2])       ⌈ Test if index matches limit. ⌉
-    if(S[-1]): %rpop; %rpop  ⌈ Remove loop variables. ⌉
+    deftemp index ⇐ %rpop
+    deftemp limit ⇐ %rpop
+    defsynonym cond ≡ (index >= limit)
+    %push (cond)
+    if (cond) { ⌈ clean up rstack if index >= limit ⌉
+        %rpop
+        %rpop
+    }    
 }
-===================
 
 defimmediatesubr xploop "+loop" {
     ⌈ ( --) Close counted loop. ⌉
-    Stack.RAM.append(%funcall _find("(loop)"))   ⌈ Compile in loop test. ⌉
-    Stack.RAM.append(%funcall _find("0branch"))  ⌈ Compile in branch check. ⌉
-    Stack.RAM.append(%rpop)           ⌈ Address to jump back to. ⌉
+    %funcall Stack.RAM.append(%funcall _find("(loop)"))   ⌈ Compile in loop test. ⌉
+    %funcall Stack.RAM.append(%funcall _find("0branch"))  ⌈ Compile in branch check. ⌉
+    %funcall Stack.RAM.append(%rpop)           ⌈ Address to jump back to. ⌉
 }
 
 defimmediatesubr xloop "xloop" {
     ⌈ (  --) Close counted loop. ⌉
     %push (1)
     @literalize                  ⌈ Default loop increment for x_loop. ⌉
-    Stack.RAM.append(%funcall _find("(loop)"))   ⌈ Compile in loop test. ⌉
-    Stack.RAM.append(%funcall _find("0branch"))  ⌈ Compile in branch check. ⌉
-    Stack.RAM.append(%rpop)           ⌈ Address to jump back to. ⌉
+    %funcall Stack.RAM.append(%funcall _find("(loop)"))   ⌈ Compile in loop test. ⌉
+    %funcall Stack.RAM.append(%funcall _find("0branch"))  ⌈ Compile in branch check. ⌉
+    %funcall Stack.RAM.append(%rpop)           ⌈ Address to jump back to. ⌉
 }
 
 defimmediatesubr xbegin "begin" {
@@ -333,8 +334,8 @@ defimmediatesubr xbegin "begin" {
 
 defimmediatesubr xuntil "until" {
     ⌈ (  f --) Close indefinite loop with test. ⌉
-    Stack.RAM.append(%funcall _find("0branch"))  ⌈ Expects result of test on stack. ⌉
-    Stack.RAM.append(%rpop)           ⌈ Address to jump back to. ⌉
+    %funcall Stack.RAM.append(%funcall _find("0branch"))  ⌈ Expects result of test on stack. ⌉
+    %funcall Stack.RAM.append(%rpop)           ⌈ Address to jump back to. ⌉
 }
 
 
@@ -354,7 +355,7 @@ defsubr xconst "const" {
     deftemp value ⇐ %pop
     defsynonym normal ≡ 0
     deftemp fobj ⇐ %funcall code (name, normal, ↪︎doconst)
-    %fobjappend (fobj, value)
+    %funcall Stack.RAM.append (value)
 }
 
 deffunction doconst () {  ⌈ method for const ⌉
@@ -406,7 +407,7 @@ defsubr xdump "dump" {
     deftemp start ⇐ %toint (%pop)
     %print ("----------------------------------------------------------------")
     deftemp a ⇐ start
-    while (a < start + %funcall (min (n, (%funcall len (RAM) - start)))) {
+    while (a < start + (%funcall min (n, (%funcall len (RAM) - start)))) {
         %print (a)
 	%print (": ")
 	%print (RAM [a])
@@ -626,7 +627,7 @@ defsubr xinterpret "interpret" {
 
 ⌈ Example of state-smart word, which Brodie sez not to do. Sorry, Leo... ⌉
 ⌈ This sin allows it to be used the same way compiling or interactive. ⌉
-defimmediatesubr xquote {
+defimmediatesubr xquote "quote" {
     ⌈ ( -- string) Read up to closing quote, push to stack. ⌉
 
     %push (34)

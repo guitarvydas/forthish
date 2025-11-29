@@ -1,3 +1,5 @@
-defsubr x {
-    deftemp y ⇐ %lookup (subrs, "(literal)")
+deffunction literalize () {
+    ⌈ Compile literal into definition. ⌉
+    %funcall Stack.RAM.append(%funcall _find ("(literal)"))  ⌈# Compile address of doliteral. ⌉
+    %funcall Stack.RAM.append(%pop)             ⌈ # Compile literal value. ⌉
 }
