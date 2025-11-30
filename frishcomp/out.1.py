@@ -39,6 +39,8 @@ def code (name,flags,does):
     State.LAST =  x
     # LAST is the pointer to the head of the dictionary list, set it to point to⎩11⎭
     #                                      this new word #line 12#line 13#line 14
+    print (f'code {name} -> {State.RAM[x:x+4]}')
+
 
 def xdrop ():
     global State                                       #line 15
@@ -216,13 +218,13 @@ def xi ():
     State.S.push ( i)                                  #line 131#line 132#line 133
 code("i",0,  xi)
 
-def xi ():
+def xiquote ():
     global State                                       #line 134
     # ( -- i ) get outer loop limit from R stack       #line 135
 
     i = State.R [-2]                                   #line 136
     State.S.push ( i)                                  #line 137#line 138#line 139
-code("i'",0,  xi)
+code("i'",0,  xiquote)
 
 def xj ():
     global State                                       #line 140

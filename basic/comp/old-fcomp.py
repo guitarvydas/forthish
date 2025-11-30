@@ -33,6 +33,7 @@ def code(name, does, flags=0):
     RAM.append(flags)  # Flags
     RAM.append(does)   # Code pointer.
     LAST = x
+    print (f'code {name} -> {RAM[x:x+4]}')
 
 code("drop", lambda : S.pop())  # ( a --) Drop TOS.
 code("dup", lambda : S.push(S[-1]))  # ( a -- a a) Duplicate TOS.

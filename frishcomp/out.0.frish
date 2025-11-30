@@ -131,7 +131,7 @@ defsubr xi "i" {⎩128⎭
     %push (i)⎩131⎭
 }⎩132⎭
 ⎩133⎭
-defsubr xi "i'" {⎩134⎭
+defsubr xiquote "i'" {⎩134⎭
     ⌈ ( -- i ) get outer loop limit from R stack ⌉⎩135⎭
     deftemp i ⇐ %rsecond⎩136⎭
     %push (i)⎩137⎭
