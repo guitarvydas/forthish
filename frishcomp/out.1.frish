@@ -3,10 +3,10 @@ deffunction code (name, flags, does) {⎩1⎭
       the dictionary by linking back to the head of the dictionary list ⌉⎩3⎭
     x ⇐ %funcall len (State.RAM)⎩4⎭
 ⎩5⎭
-    %funcall State.RAM.append (State.LAST) ⌈ (LFA) link to previous word in dictionary list ⌉⎩6⎭
-    %funcall State.RAM.append (name)       ⌈ (NFA) name of word ⌉⎩7⎭
-    %funcall State.RAM.append (flags)      ⌈       0 = normal word, 1 = immediate word ⌉⎩8⎭
-    %funcall State.RAM.append (does)       ⌈ (CFA) function pointer that points to code that executes the word ⌉⎩9⎭
+    %ram+ (State.LAST) ⌈ (LFA) link to previous word in dictionary list ⌉⎩6⎭
+    %ram+ (name)       ⌈ (NFA) name of word ⌉⎩7⎭
+    %ram+ (flags)      ⌈       0 = normal word, 1 = immediate word ⌉⎩8⎭
+    %ram+ (does)       ⌈ (CFA) function pointer that points to code that executes the word ⌉⎩9⎭
 ⎩10⎭
     State.LAST ⇐ x                ⌈ LAST is the pointer to the head of the dictionary list, set it to point to⎩11⎭
                                       this new word ⌉⎩12⎭
@@ -161,7 +161,7 @@ defsubr xdiv "/" {⎩159⎭
     @xswap⎩161⎭
     deftemp B ⇐ %pop⎩162⎭
     deftemp A ⇐ %pop⎩163⎭
-    %funcall State.S.append (B / A)⎩164⎭
+    %push (B / A)⎩164⎭
 }⎩165⎭
 ⎩166⎭
 defsubr xword "word" {⎩167⎭
@@ -219,8 +219,8 @@ defsubr xdoliteral "(literal)" {⎩195⎭
 ⎩219⎭
 deffunction literalize () {⎩220⎭
     ⌈ Compile literal into definition. ⌉⎩221⎭
-    %funcall Stack.RAM.append(%funcall _find ("(literal)"))  ⌈# Compile address of doliteral. ⌉⎩222⎭
-    %funcall Stack.RAM.append(%pop)             ⌈ # Compile literal value. ⌉⎩223⎭
+    %ram+ (%funcall _find ("(literal)"))  ⌈# Compile address of doliteral. ⌉⎩222⎭
+    %ram+ (%pop)             ⌈ # Compile literal value. ⌉⎩223⎭
 }⎩224⎭
 ⎩225⎭
 defsubr xbranch "branch" {⎩226⎭
@@ -256,10 +256,10 @@ defsubr xif "if" { ⎩255⎭
     %immediate ⌈ This instruction appears only inside subroutine sequences, ( f -- ) compile if test and branchFalse ⌉ ⎩256⎭
     ⌈ Step. 1: generate conditional branch to yet-unknown target1 ⌉ ⎩257⎭
     deftemp branchFalseAddress ⇐ %funcall _find ("0branch")⎩258⎭
-    %funcall Stack.RAM.append (branchFalseAddress) ⌈ insert branch-if-false opcode (word) ⌉ ⎩259⎭
+    %ram+ (branchFalseAddress) ⌈ insert branch-if-false opcode (word) ⌉ ⎩259⎭
     %rpush (%RAMnext) ⌈ target1 onto r-stack as memo for later fixup ⌉ ⎩260⎭
     defsynonym target1 ≡ -1 ⎩261⎭
-    %funcall Stack.RAM.append (target1) ⌈ branch target will be fixed up later ⌉ ⎩262⎭
+    %ram+ (target1) ⌈ branch target will be fixed up later ⌉ ⎩262⎭
     ⌈ Step. 2: generate code for true branch - return to compiler which will compile the following words ⌉ ⎩263⎭
     ⌈ THEN or ELSE will do the fixup of target1 ⌉ ⎩264⎭
 } ⎩265⎭
@@ -273,7 +273,7 @@ defimmediatesubr xelse "else" {⎩268⎭
     deftemp brAddress ⇐ %funcall _find ("branch")⎩273⎭
     %rpush (%RAMnext) ⌈ target2 address on R-stack as memo for later fixup ⌉⎩274⎭
     defsynonym target2 ≡ -1⎩275⎭
-    %funcall Stack.RAM.append (target2) ⌈ branch target will be fixed up later ⌉⎩276⎭
+    %ram+ (target2) ⌈ branch target will be fixed up later ⌉⎩276⎭
     ⌈ Step. 3: generate code for false branch - return to compiler which will compile the following words ⌉⎩277⎭
     ⌈ THEN will do the fixup of target2 ⌉⎩278⎭
 }⎩279⎭
@@ -296,7 +296,7 @@ defsubr x_do "(do)" {⎩288⎭
 ⎩296⎭
 defimmediatesubr xdo "xdo" {⎩297⎭
     ⌈ (  limit index --) Begin counted loop. ⌉⎩298⎭
-    %funcall Stack.RAM.append(%funcall _find("(do)"))  ⌈ Push do loop handler. ⌉⎩299⎭
+    %ram+(%funcall _find("(do)"))  ⌈ Push do loop handler. ⌉⎩299⎭
     %rpush(%RAMnext)           ⌈ Push address to jump back to. ⌉⎩300⎭
 }⎩301⎭
 ⎩302⎭
@@ -314,18 +314,18 @@ defsubr x_loop "(loop)" {⎩303⎭
 ⎩314⎭
 defimmediatesubr xploop "+loop" {⎩315⎭
     ⌈ ( --) Close counted loop. ⌉⎩316⎭
-    %funcall Stack.RAM.append(%funcall _find("(loop)"))   ⌈ Compile in loop test. ⌉⎩317⎭
-    %funcall Stack.RAM.append(%funcall _find("0branch"))  ⌈ Compile in branch check. ⌉⎩318⎭
-    %funcall Stack.RAM.append(%rpop)           ⌈ Address to jump back to. ⌉⎩319⎭
+    %ram+(%funcall _find("(loop)"))   ⌈ Compile in loop test. ⌉⎩317⎭
+    %ram+(%funcall _find("0branch"))  ⌈ Compile in branch check. ⌉⎩318⎭
+    %ram+(%rpop)           ⌈ Address to jump back to. ⌉⎩319⎭
 }⎩320⎭
 ⎩321⎭
 defimmediatesubr xloop "xloop" {⎩322⎭
     ⌈ (  --) Close counted loop. ⌉⎩323⎭
     %push (1)⎩324⎭
     @literalize                  ⌈ Default loop increment for x_loop. ⌉⎩325⎭
-    %funcall Stack.RAM.append(%funcall _find("(loop)"))   ⌈ Compile in loop test. ⌉⎩326⎭
-    %funcall Stack.RAM.append(%funcall _find("0branch"))  ⌈ Compile in branch check. ⌉⎩327⎭
-    %funcall Stack.RAM.append(%rpop)           ⌈ Address to jump back to. ⌉⎩328⎭
+    %ram+(%funcall _find("(loop)"))   ⌈ Compile in loop test. ⌉⎩326⎭
+    %ram+(%funcall _find("0branch"))  ⌈ Compile in branch check. ⌉⎩327⎭
+    %ram+(%rpop)           ⌈ Address to jump back to. ⌉⎩328⎭
 }⎩329⎭
 ⎩330⎭
 defimmediatesubr xbegin "begin" {⎩331⎭
@@ -334,8 +334,8 @@ defimmediatesubr xbegin "begin" {⎩331⎭
 ⎩334⎭
 defimmediatesubr xuntil "until" {⎩335⎭
     ⌈ (  f --) Close indefinite loop with test. ⌉⎩336⎭
-    %funcall Stack.RAM.append(%funcall _find("0branch"))  ⌈ Expects result of test on stack. ⌉⎩337⎭
-    %funcall Stack.RAM.append(%rpop)           ⌈ Address to jump back to. ⌉⎩338⎭
+    %ram+(%funcall _find("0branch"))  ⌈ Expects result of test on stack. ⌉⎩337⎭
+    %ram+(%rpop)           ⌈ Address to jump back to. ⌉⎩338⎭
 }⎩339⎭
 ⎩340⎭
 ⎩341⎭
@@ -355,7 +355,7 @@ defsubr xconst "const" {⎩348⎭
     deftemp value ⇐ %pop⎩355⎭
     defsynonym normal ≡ 0⎩356⎭
     deftemp fobj ⇐ %funcall code (name, normal, ↪︎doconst)⎩357⎭
-    %funcall Stack.RAM.append (value)⎩358⎭
+    %ram+ (value)⎩358⎭
 }⎩359⎭
 ⎩360⎭
 deffunction doconst () {  ⌈ method for const ⌉⎩361⎭
@@ -381,7 +381,7 @@ defsubr xcreate "create"{⎩375⎭
 }⎩381⎭
 ⎩382⎭
 deffunction comma (value) {⎩383⎭
-    %funcall State.RAM.append (value)⎩384⎭
+    %ram+ (value)⎩384⎭
 }⎩385⎭
 ⎩386⎭
 defsubr xcomma "," {⎩387⎭
@@ -570,7 +570,7 @@ defsubr xcolon ":" {⎩560⎭
 defimmediatesubr xsemi ";"{⎩570⎭
     ⌈ ( --) Finish definition. ⌉⎩571⎭
 ⎩572⎭
-    %funcall State.RAM.append(-1)  ⌈ Marker for end of definition. ⌉⎩573⎭
+    %ram+(-1)  ⌈ Marker for end of definition. ⌉⎩573⎭
     %setNotCompilingState⎩574⎭
 }⎩575⎭
 ⎩576⎭
@@ -583,74 +583,72 @@ defsubr xinterpret "interpret" {⎩577⎭
 	2. (xt 1) if found and word is immediate,⎩583⎭
 	3. (xt -1) if found and word is normal ⌉⎩584⎭
     deftemp result ⇐ %pop					    defsynonym foundImmediate ≡ (result = 1)⎩585⎭
-    deftemp item ⇐ %pop					    defsynonym foundNormal ≡ (result = -1)⎩586⎭
+    deftemp item ⇐ %pop						    defsynonym foundNormal ≡ (result = -1)⎩586⎭
     	    	   						    defsynonym notFound ≡ (result = 0)⎩587⎭
-    if (foundImmediate or foundNormal) {		    	    defsynonym xt ≡ item⎩588⎭
-	if %inCompilationState {		⎩589⎭
-	    if foundImmediate {⎩590⎭
-		State.W ⇐ xt⎩591⎭
-		State.IP ⇐ -1  ⌈ Dummy to hold place in return stack. ⌉⎩592⎭
-		@State.RAM[xt]  ⌈ Execute code. ⌉⎩593⎭
-	    } else {⎩594⎭
-		%funcall State.RAM.append(xt)⎩595⎭
-	    }⎩596⎭
-	 } else {⎩597⎭
-	    ⌈ not compiling ⌉⎩598⎭
-	    %funcall State.RAM.append (xt)⎩599⎭
-	 }⎩600⎭
-     } else {							    defsynonym word ≡ item⎩601⎭
-	 if (%isInteger (word)) {⎩602⎭
-	     %push (%toint (word))⎩603⎭
-	     if %inCompilationState {⎩604⎭
-		     @literalize⎩605⎭
-	     }⎩606⎭
-	 } elif (%isFloat (word)) {⎩607⎭
-	     %push (%tofloat (word))⎩608⎭
-	     if %inCompilationState {⎩609⎭
-		     @literalize⎩610⎭
-	     }⎩611⎭
-	 } else {⎩612⎭
-	     %clearS⎩613⎭
-	     %clearR⎩614⎭
-	     %print (word)⎩615⎭
-	     %print ("?")⎩616⎭
-	     %eol⎩617⎭
-	     return False⎩618⎭
-	 }⎩619⎭
-    }⎩620⎭
-    return True⎩621⎭
-}⎩622⎭
-⎩623⎭
-deffunction ok () {⎩624⎭
-    ⌈ ( --) Interaction loop -- REPL ⌉⎩625⎭
-    defsynonym blank ≡ 32⎩626⎭
-    while ⊤ {⎩627⎭
-        %input⎩628⎭
-        while not %empty-input {⎩629⎭
-           if (@xinterpret) {⎩630⎭
-	           %print (" ok")⎩631⎭
-		   %eol⎩632⎭
-	   }⎩633⎭
-        }⎩634⎭
-    }⎩635⎭
-}⎩636⎭
-⎩637⎭
-deffunction debugok () {⎩638⎭
-    ⌈ ( --) Interaction loop -- REPL ⌉⎩639⎭
-    defsynonym blank ≡ 32⎩640⎭
-        %debuginput⎩641⎭
-        while not %empty-input {⎩642⎭
-           if (@xinterpret) {⎩643⎭
-	           %print (" ok")⎩644⎭
-		   %eol⎩645⎭
-	   }⎩646⎭
-	   %print (State.BUFP) %print (" -- ") %print (State.BUFF) %eol⎩647⎭
-	   @xdots⎩648⎭
-        }⎩649⎭
-	   %print (State.BUFP) %print (" == ") %print (State.BUFF) %eol⎩650⎭
-	   @xdot⎩651⎭
-	   @xdots⎩652⎭
-}⎩653⎭
-⎩654⎭
-@debugok⎩655⎭
-    ⎩656⎭
+    	    	   						    defsynonym found ≡ (foundImmediate or foundNormal)⎩588⎭
+    if (found) {		    				    defsynonym xt ≡ item⎩589⎭
+	if %inCompilationState {		⎩590⎭
+	    if foundImmediate {⎩591⎭
+		State.W ⇐ xt⎩592⎭
+		State.IP ⇐ -1  ⌈ Dummy to hold place in return stack. ⌉⎩593⎭
+		@State.RAM[xt]  ⌈ Execute code. ⌉⎩594⎭
+	    } else {⎩595⎭
+		%ram+(xt)⎩596⎭
+	    }⎩597⎭
+	 } else {⎩598⎭
+	    ⌈ not compiling ⌉⎩599⎭
+	    @State.RAM[xt]  ⌈ Execute code. ⌉⎩600⎭
+	 }⎩601⎭
+     } else {							    defsynonym word ≡ item⎩602⎭
+	 if (%isInteger (word)) {⎩603⎭
+	     %push (%toint (word))⎩604⎭
+	     if %inCompilationState {⎩605⎭
+		     @literalize⎩606⎭
+	     }⎩607⎭
+	 } elif (%isFloat (word)) {⎩608⎭
+	     %push (%tofloat (word))⎩609⎭
+	     if %inCompilationState {⎩610⎭
+		     @literalize⎩611⎭
+	     }⎩612⎭
+	 } else {⎩613⎭
+	     %clearS⎩614⎭
+	     %clearR⎩615⎭
+	     %print (word)⎩616⎭
+	     %print ("?")⎩617⎭
+	     %eol⎩618⎭
+	     return False⎩619⎭
+	 }⎩620⎭
+    }⎩621⎭
+    return True⎩622⎭
+}⎩623⎭
+⎩624⎭
+deffunction ok () {⎩625⎭
+    ⌈ ( --) Interaction loop -- REPL ⌉⎩626⎭
+    defsynonym blank ≡ 32⎩627⎭
+    while ⊤ {⎩628⎭
+        %input⎩629⎭
+        while not %empty-input {⎩630⎭
+           @xinterpret⎩631⎭
+        }⎩632⎭
+    }⎩633⎭
+}⎩634⎭
+⎩635⎭
+deffunction debugok () {⎩636⎭
+    ⌈ ( --) Interaction loop -- REPL ⌉⎩637⎭
+    defsynonym blank ≡ 32⎩638⎭
+        %debuginput⎩639⎭
+        while not %empty-input {⎩640⎭
+           if (@xinterpret) {⎩641⎭
+	           %print (" ok")⎩642⎭
+		   %eol⎩643⎭
+	   }⎩644⎭
+	   %print (State.BUFP) %print (" -- ") %print (State.BUFF) %eol⎩645⎭
+	   @xdots⎩646⎭
+        }⎩647⎭
+	   %print (State.BUFP) %print (" == ") %print (State.BUFF) %eol⎩648⎭
+	   @xdot⎩649⎭
+	   @xdots⎩650⎭
+}⎩651⎭
+⎩652⎭
+@ok⎩653⎭
+    ⎩654⎭

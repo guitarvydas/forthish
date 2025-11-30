@@ -3,10 +3,10 @@ deffunction code (name, flags, does) {
       the dictionary by linking back to the head of the dictionary list ⌉
     x ⇐ %funcall len (State.RAM)
 
-    %funcall State.RAM.append (State.LAST) ⌈ (LFA) link to previous word in dictionary list ⌉
-    %funcall State.RAM.append (name)       ⌈ (NFA) name of word ⌉
-    %funcall State.RAM.append (flags)      ⌈       0 = normal word, 1 = immediate word ⌉
-    %funcall State.RAM.append (does)       ⌈ (CFA) function pointer that points to code that executes the word ⌉
+    %ram+ (State.LAST) ⌈ (LFA) link to previous word in dictionary list ⌉
+    %ram+ (name)       ⌈ (NFA) name of word ⌉
+    %ram+ (flags)      ⌈       0 = normal word, 1 = immediate word ⌉
+    %ram+ (does)       ⌈ (CFA) function pointer that points to code that executes the word ⌉
 
     State.LAST ⇐ x                ⌈ LAST is the pointer to the head of the dictionary list, set it to point to
                                       this new word ⌉
@@ -161,7 +161,7 @@ defsubr xdiv "/" {
     @xswap
     deftemp B ⇐ %pop
     deftemp A ⇐ %pop
-    %funcall State.S.append (B / A)
+    %push (B / A)
 }
 
 defsubr xword "word" {
@@ -219,8 +219,8 @@ defsubr xdoliteral "(literal)" {
 
 deffunction literalize () {
     ⌈ Compile literal into definition. ⌉
-    %funcall Stack.RAM.append(%funcall _find ("(literal)"))  ⌈# Compile address of doliteral. ⌉
-    %funcall Stack.RAM.append(%pop)             ⌈ # Compile literal value. ⌉
+    %ram+ (%funcall _find ("(literal)"))  ⌈# Compile address of doliteral. ⌉
+    %ram+ (%pop)             ⌈ # Compile literal value. ⌉
 }
 
 defsubr xbranch "branch" {
@@ -256,10 +256,10 @@ defsubr xif "if" {
     %immediate ⌈ This instruction appears only inside subroutine sequences, ( f -- ) compile if test and branchFalse ⌉ 
     ⌈ Step. 1: generate conditional branch to yet-unknown target1 ⌉ 
     deftemp branchFalseAddress ⇐ %funcall _find ("0branch")
-    %funcall Stack.RAM.append (branchFalseAddress) ⌈ insert branch-if-false opcode (word) ⌉ 
+    %ram+ (branchFalseAddress) ⌈ insert branch-if-false opcode (word) ⌉ 
     %rpush (%RAMnext) ⌈ target1 onto r-stack as memo for later fixup ⌉ 
     defsynonym target1 ≡ -1 
-    %funcall Stack.RAM.append (target1) ⌈ branch target will be fixed up later ⌉ 
+    %ram+ (target1) ⌈ branch target will be fixed up later ⌉ 
     ⌈ Step. 2: generate code for true branch - return to compiler which will compile the following words ⌉ 
     ⌈ THEN or ELSE will do the fixup of target1 ⌉ 
 } 
@@ -273,7 +273,7 @@ defimmediatesubr xelse "else" {
     deftemp brAddress ⇐ %funcall _find ("branch")
     %rpush (%RAMnext) ⌈ target2 address on R-stack as memo for later fixup ⌉
     defsynonym target2 ≡ -1
-    %funcall Stack.RAM.append (target2) ⌈ branch target will be fixed up later ⌉
+    %ram+ (target2) ⌈ branch target will be fixed up later ⌉
     ⌈ Step. 3: generate code for false branch - return to compiler which will compile the following words ⌉
     ⌈ THEN will do the fixup of target2 ⌉
 }
@@ -296,7 +296,7 @@ defsubr x_do "(do)" {
 
 defimmediatesubr xdo "xdo" {
     ⌈ (  limit index --) Begin counted loop. ⌉
-    %funcall Stack.RAM.append(%funcall _find("(do)"))  ⌈ Push do loop handler. ⌉
+    %ram+(%funcall _find("(do)"))  ⌈ Push do loop handler. ⌉
     %rpush(%RAMnext)           ⌈ Push address to jump back to. ⌉
 }
 
@@ -314,18 +314,18 @@ defsubr x_loop "(loop)" {
 
 defimmediatesubr xploop "+loop" {
     ⌈ ( --) Close counted loop. ⌉
-    %funcall Stack.RAM.append(%funcall _find("(loop)"))   ⌈ Compile in loop test. ⌉
-    %funcall Stack.RAM.append(%funcall _find("0branch"))  ⌈ Compile in branch check. ⌉
-    %funcall Stack.RAM.append(%rpop)           ⌈ Address to jump back to. ⌉
+    %ram+(%funcall _find("(loop)"))   ⌈ Compile in loop test. ⌉
+    %ram+(%funcall _find("0branch"))  ⌈ Compile in branch check. ⌉
+    %ram+(%rpop)           ⌈ Address to jump back to. ⌉
 }
 
 defimmediatesubr xloop "xloop" {
     ⌈ (  --) Close counted loop. ⌉
     %push (1)
     @literalize                  ⌈ Default loop increment for x_loop. ⌉
-    %funcall Stack.RAM.append(%funcall _find("(loop)"))   ⌈ Compile in loop test. ⌉
-    %funcall Stack.RAM.append(%funcall _find("0branch"))  ⌈ Compile in branch check. ⌉
-    %funcall Stack.RAM.append(%rpop)           ⌈ Address to jump back to. ⌉
+    %ram+(%funcall _find("(loop)"))   ⌈ Compile in loop test. ⌉
+    %ram+(%funcall _find("0branch"))  ⌈ Compile in branch check. ⌉
+    %ram+(%rpop)           ⌈ Address to jump back to. ⌉
 }
 
 defimmediatesubr xbegin "begin" {
@@ -334,8 +334,8 @@ defimmediatesubr xbegin "begin" {
 
 defimmediatesubr xuntil "until" {
     ⌈ (  f --) Close indefinite loop with test. ⌉
-    %funcall Stack.RAM.append(%funcall _find("0branch"))  ⌈ Expects result of test on stack. ⌉
-    %funcall Stack.RAM.append(%rpop)           ⌈ Address to jump back to. ⌉
+    %ram+(%funcall _find("0branch"))  ⌈ Expects result of test on stack. ⌉
+    %ram+(%rpop)           ⌈ Address to jump back to. ⌉
 }
 
 
@@ -355,7 +355,7 @@ defsubr xconst "const" {
     deftemp value ⇐ %pop
     defsynonym normal ≡ 0
     deftemp fobj ⇐ %funcall code (name, normal, ↪︎doconst)
-    %funcall Stack.RAM.append (value)
+    %ram+ (value)
 }
 
 deffunction doconst () {  ⌈ method for const ⌉
@@ -381,7 +381,7 @@ defsubr xcreate "create"{
 }
 
 deffunction comma (value) {
-    %funcall State.RAM.append (value)
+    %ram+ (value)
 }
 
 defsubr xcomma "," {
@@ -570,7 +570,7 @@ defsubr xcolon ":" {
 defimmediatesubr xsemi ";"{
     ⌈ ( --) Finish definition. ⌉
 
-    %funcall State.RAM.append(-1)  ⌈ Marker for end of definition. ⌉
+    %ram+(-1)  ⌈ Marker for end of definition. ⌉
     %setNotCompilingState
 }
 
@@ -583,20 +583,21 @@ defsubr xinterpret "interpret" {
 	2. (xt 1) if found and word is immediate,
 	3. (xt -1) if found and word is normal ⌉
     deftemp result ⇐ %pop					    defsynonym foundImmediate ≡ (result = 1)
-    deftemp item ⇐ %pop					    defsynonym foundNormal ≡ (result = -1)
+    deftemp item ⇐ %pop						    defsynonym foundNormal ≡ (result = -1)
     	    	   						    defsynonym notFound ≡ (result = 0)
-    if (foundImmediate or foundNormal) {		    	    defsynonym xt ≡ item
+    	    	   						    defsynonym found ≡ (foundImmediate or foundNormal)
+    if (found) {		    				    defsynonym xt ≡ item
 	if %inCompilationState {		
 	    if foundImmediate {
 		State.W ⇐ xt
 		State.IP ⇐ -1  ⌈ Dummy to hold place in return stack. ⌉
 		@State.RAM[xt]  ⌈ Execute code. ⌉
 	    } else {
-		%funcall State.RAM.append(xt)
+		%ram+(xt)
 	    }
 	 } else {
 	    ⌈ not compiling ⌉
-	    %funcall State.RAM.append (xt)
+	    @State.RAM[xt]  ⌈ Execute code. ⌉
 	 }
      } else {							    defsynonym word ≡ item
 	 if (%isInteger (word)) {
@@ -627,10 +628,7 @@ deffunction ok () {
     while ⊤ {
         %input
         while not %empty-input {
-           if (@xinterpret) {
-	           %print (" ok")
-		   %eol
-	   }
+           @xinterpret
         }
     }
 }
@@ -652,5 +650,5 @@ deffunction debugok () {
 	   @xdots
 }
 
-@debugok
+@ok
     

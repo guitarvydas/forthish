@@ -85,6 +85,7 @@ frish {
      | "%immediate" -- immediate
 
      | "%RAMnext" -- ramnext
+     | "%ram+" "(" Exp ")" -- ramappend
      
      | "%" #ident Args? -- unrecognized
 

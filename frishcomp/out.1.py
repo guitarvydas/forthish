@@ -24,13 +24,17 @@ def code (name,flags,does):
     # Add new word to RAM dictionary. We create a word (Forth "object") in RAM with 5 fields and extend the⎩2⎭
     #      the dictionary by linking back to the head of the dictionary list #line 3
     x =  len( State.RAM)                               #line 4#line 5
-    State.RAM.append( State.LAST)
+
+    State.RAM.append ( State.LAST)
     # (LFA) link to previous word in dictionary list   #line 6
-    State.RAM.append( name)
+
+    State.RAM.append ( name)
     # (NFA) name of word                               #line 7
-    State.RAM.append( flags)
+
+    State.RAM.append ( flags)
     #       0 = normal word, 1 = immediate word        #line 8
-    State.RAM.append( does)
+
+    State.RAM.append ( does)
     # (CFA) function pointer that points to code that executes the word #line 9#line 10
     State.LAST =  x
     # LAST is the pointer to the head of the dictionary list, set it to point to⎩11⎭
@@ -257,7 +261,7 @@ def xdiv ():
     B = State.S.pop ()                                 #line 162
 
     A = State.S.pop ()                                 #line 163
-    State.S.append( B [A])                             #line 164#line 165#line 166
+    State.S.push ( B [A])                              #line 164#line 165#line 166
 code("/",0,  xdiv)
 
 def xword ():
@@ -334,9 +338,11 @@ code("(literal)",0,  xdoliteral)
 def literalize ():
     global State                                       #line 220
     # Compile literal into definition.                 #line 221
-    Stack.RAM.append( _find( "(literal)"))
+
+    State.RAM.append ( _find( "(literal)"))
     ## Compile address of doliteral.                   #line 222
-    Stack.RAM.append(State.S.pop ())
+
+    State.RAM.append (State.S.pop ())
     # # Compile literal value.                         #line 223#line 224#line 225
 
 def xbranch ():
@@ -373,13 +379,15 @@ def xif ():
     # Step. 1: generate conditional branch to yet-unknown target1 #line 257
 
     branchFalseAddress =  _find( "0branch")            #line 258
-    Stack.RAM.append( branchFalseAddress)
+
+    State.RAM.append ( branchFalseAddress)
     # insert branch-if-false opcode (word)             #line 259
     State.R.append (len (Stack.RAM))
     # target1 onto r-stack as memo for later fixup     #line 260
 
     target1 =  -1                                      #line 261
-    Stack.RAM.append( target1)
+
+    State.RAM.append ( target1)
     # branch target will be fixed up later             #line 262
     # Step. 2: generate code for true branch - return to compiler which will compile the following words #line 263
     # THEN or ELSE will do the fixup of target1        #line 264#line 265#line 266
@@ -399,7 +407,8 @@ def xelse ():
     # target2 address on R-stack as memo for later fixup #line 274
 
     target2 =  -1                                      #line 275
-    Stack.RAM.append( target2)
+
+    State.RAM.append ( target2)
     # branch target will be fixed up later             #line 276
     # Step. 3: generate code for false branch - return to compiler which will compile the following words #line 277
     # THEN will do the fixup of target2                #line 278#line 279#line 280
@@ -429,7 +438,8 @@ code("(do)",0,  x_do)
 def xdo ():
     global State                                       #line 297
     # (  limit index --) Begin counted loop.           #line 298
-    Stack.RAM.append( _find( "(do)"))
+
+    State.RAM.append ( _find( "(do)"))
     # Push do loop handler.                            #line 299
     State.R.append (len (Stack.RAM))
     # Push address to jump back to.                    #line 300#line 301#line 302
@@ -454,11 +464,14 @@ code("(loop)",0,  x_loop)
 def xploop ():
     global State                                       #line 315
     # ( --) Close counted loop.                        #line 316
-    Stack.RAM.append( _find( "(loop)"))
+
+    State.RAM.append ( _find( "(loop)"))
     # Compile in loop test.                            #line 317
-    Stack.RAM.append( _find( "0branch"))
+
+    State.RAM.append ( _find( "0branch"))
     # Compile in branch check.                         #line 318
-    Stack.RAM.append(State.R.pop ())
+
+    State.RAM.append (State.R.pop ())
     # Address to jump back to.                         #line 319#line 320#line 321
 code("+loop", 1, xploop)
 
@@ -468,11 +481,14 @@ def xloop ():
     State.S.push ( 1)                                  #line 324
     literalize()
     # Default loop increment for x_loop.               #line 325
-    Stack.RAM.append( _find( "(loop)"))
+
+    State.RAM.append ( _find( "(loop)"))
     # Compile in loop test.                            #line 326
-    Stack.RAM.append( _find( "0branch"))
+
+    State.RAM.append ( _find( "0branch"))
     # Compile in branch check.                         #line 327
-    Stack.RAM.append(State.R.pop ())
+
+    State.RAM.append (State.R.pop ())
     # Address to jump back to.                         #line 328#line 329#line 330
 code("xloop", 1, xloop)
 
@@ -485,9 +501,11 @@ code("begin", 1, xbegin)
 def xuntil ():
     global State                                       #line 335
     # (  f --) Close indefinite loop with test.        #line 336
-    Stack.RAM.append( _find( "0branch"))
+
+    State.RAM.append ( _find( "0branch"))
     # Expects result of test on stack.                 #line 337
-    Stack.RAM.append(State.R.pop ())
+
+    State.RAM.append (State.R.pop ())
     # Address to jump back to.                         #line 338#line 339#line 340
 code("until", 1, xuntil)
                                                        #line 341#line 342
@@ -512,7 +530,8 @@ def xconst ():
     normal =  0                                        #line 356
 
     fobj =  code( name, normal, doconst)               #line 357
-    Stack.RAM.append( value)                           #line 358#line 359#line 360
+
+    State.RAM.append ( value)                          #line 358#line 359#line 360
 code("const",0,  xconst)
 
 def doconst ():
@@ -547,7 +566,8 @@ code("create",0,  xcreate)
 
 def comma (value):
     global State                                       #line 383
-    State.RAM.append( value)                           #line 384#line 385#line 386
+
+    State.RAM.append ( value)                          #line 384#line 385#line 386
 
 def xcomma ():
     global State                                       #line 387
@@ -766,7 +786,8 @@ code(":",0,  xcolon)
 def xsemi ():
     global State                                       #line 570
     # ( --) Finish definition.                         #line 571#line 572
-    State.RAM.append( -1)
+
+    State.RAM.append ( -1)
     # Marker for end of definition.                    #line 573
     State.compiling = False                            #line 574#line 575#line 576
 code(";", 1, xsemi)
@@ -789,81 +810,83 @@ def xinterpret ():
     foundNormal = ( result ==  -1)                     #line 586
 
     notFound = ( result ==  0)                         #line 587
-    if ( foundImmediate or  foundNormal):
 
-        xt =  item                                     #line 588
-        if State.compiling:                            #line 589
-            if  foundImmediate:                        #line 590
-                State.W =  xt                          #line 591
+    found = ( foundImmediate or  foundNormal)          #line 588
+    if ( found):
+
+        xt =  item                                     #line 589
+        if State.compiling:                            #line 590
+            if  foundImmediate:                        #line 591
+                State.W =  xt                          #line 592
                 State.IP =  -1
-                # Dummy to hold place in return stack. #line 592
+                # Dummy to hold place in return stack. #line 593
                 State.RAM [ xt]()
-                # Execute code.                        #line 593
-            else:                                      #line 594
-                State.RAM.append( xt)                  #line 595#line 596
-        else:                                          #line 597
-            # not compiling                            #line 598
-            State.RAM.append( xt)                      #line 599#line 600
+                # Execute code.                        #line 594
+            else:                                      #line 595
+
+                State.RAM.append ( xt)                 #line 596#line 597
+        else:                                          #line 598
+            # not compiling                            #line 599
+            State.RAM [ xt]()
+            # Execute code.                            #line 600#line 601
     else:
 
-        word =  item                                   #line 601
-        if (re.match(r"^-?\d*$", word)):               #line 602
-            State.S.push (int ( word))                 #line 603
-            if State.compiling:                        #line 604
-                literalize()                           #line 605#line 606
-        elif (re.match(r"^-?d*\.?\d*$", word)):        #line 607
-            State.S.push (float ( word))               #line 608
-            if State.compiling:                        #line 609
-                literalize()                           #line 610#line 611
-        else:                                          #line 612
+        word =  item                                   #line 602
+        if (re.match(r"^-?\d*$", word)):               #line 603
+            State.S.push (int ( word))                 #line 604
+            if State.compiling:                        #line 605
+                literalize()                           #line 606#line 607
+        elif (re.match(r"^-?d*\.?\d*$", word)):        #line 608
+            State.S.push (float ( word))               #line 609
+            if State.compiling:                        #line 610
+                literalize()                           #line 611#line 612
+        else:                                          #line 613
 
-            State.S.clear()                            #line 613
+            State.S.clear()                            #line 614
 
-            State.R.clear()                            #line 614
-            print ( word, end="")                      #line 615
-            print ( "?", end="")                       #line 616
-            print ()                                   #line 617
-            return  False                              #line 618#line 619#line 620
-    return  True                                       #line 621#line 622#line 623
+            State.R.clear()                            #line 615
+            print ( word, end="")                      #line 616
+            print ( "?", end="")                       #line 617
+            print ()                                   #line 618
+            return  False                              #line 619#line 620#line 621
+    return  True                                       #line 622#line 623#line 624
 code("interpret",0,  xinterpret)
 
 def ok ():
-    global State                                       #line 624
-    # ( --) Interaction loop -- REPL                   #line 625
+    global State                                       #line 625
+    # ( --) Interaction loop -- REPL                   #line 626
 
-    blank =  32                                        #line 626
-    while  True:                                       #line 627
+    blank =  32                                        #line 627
+    while  True:                                       #line 628
 
         State.BUFF = input("OK ")
         State.BUFP = 0
-                                                       #line 628
-        while not (State.BUFP >= len(State.BUFF)):     #line 629
-            if ( xinterpret()):                        #line 630
-                print ( " ok", end="")                 #line 631
-                print ()                               #line 632#line 633#line 634#line 635#line 636#line 637
+                                                       #line 629
+        while not (State.BUFP >= len(State.BUFF)):     #line 630
+            xinterpret()                               #line 631#line 632#line 633#line 634#line 635
 
 def debugok ():
-    global State                                       #line 638
-    # ( --) Interaction loop -- REPL                   #line 639
+    global State                                       #line 636
+    # ( --) Interaction loop -- REPL                   #line 637
 
-    blank =  32                                        #line 640
+    blank =  32                                        #line 638
 
     State.BUFF = "7 ."
     State.BUFP = 0
-                                                       #line 641
-    while not (State.BUFP >= len(State.BUFF)):         #line 642
-        if ( xinterpret()):                            #line 643
-            print ( " ok", end="")                     #line 644
-            print ()                                   #line 645#line 646
+                                                       #line 639
+    while not (State.BUFP >= len(State.BUFF)):         #line 640
+        if ( xinterpret()):                            #line 641
+            print ( " ok", end="")                     #line 642
+            print ()                                   #line 643#line 644
         print ( State.BUFP, end="")
         print ( " -- ", end="")
         print ( State.BUFF, end="")
-        print ()                                       #line 647
-        xdots()                                        #line 648#line 649
+        print ()                                       #line 645
+        xdots()                                        #line 646#line 647
     print ( State.BUFP, end="")
     print ( " == ", end="")
     print ( State.BUFF, end="")
-    print ()                                           #line 650
-    xdot()                                             #line 651
-    xdots()                                            #line 652#line 653#line 654
-debugok()                                              #line 655#line 656
+    print ()                                           #line 648
+    xdot()                                             #line 649
+    xdots()                                            #line 650#line 651#line 652
+ok()                                                   #line 653#line 654

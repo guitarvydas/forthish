@@ -120,6 +120,7 @@ BuiltinPhrase_setnotcompilingstate [_] = ‛State.compiling = False’
 BuiltinPhrase_immediate [_] = ‛State.compiling = False’
 
 BuiltinPhrase_ramnext [_] = ‛len (Stack.RAM)’
+BuiltinPhrase_ramappend [_ lp exp rp] = ‛\nState.RAM.append («exp»)’
  
 BuiltinPhrase_unrecognized [_ ident args?] = ‛«_» ⎝ error - unrecognized builtin "«ident»" (with given arguments) ⎠ «args» ’
 
