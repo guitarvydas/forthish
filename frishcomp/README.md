@@ -2,6 +2,10 @@
 REPL seems to work in minimal testing.
 Compiler appears to work, but calling compiled code fails at line 555 of `forthish.frish` (line 770 of `out.1.py`).
 
+Using snapshot of a previous version of fcomp.py (before file I/O) as model for meta-code version: `../basic/comp/old-fcomp.py`
+
+
+
 ## To build: 
 
 `make`
@@ -67,13 +71,15 @@ The PML is called `frish`.
 # Frish to Python Transmogrifier
 The source code for the transmogrifier is written in PBP (Parts Based Programming).
 
-You can view the source code by loading frish.drawio into the draw.io editor. (You can hack on it, too, if you wish).
+You can view the source code by loading `frish.drawio` into the draw.io editor. (You can hack on it, too, if you wish).
+
+[FTR: I'm using the downloaded version of drawio https://www.drawio.com]
 
 The top level of the source code is
 
 ![main](./das/frish-main.drawio.png)
 
-The process for transmogrifying `forthish.frish` consists of 3 main steps
+The process for transmogrifying `forthish.frish` consists of 4 main steps
 1. read the source code `forthish.frish` and convert it into internal form 
    - the conversion is done using t2t (text-to-text transpilation). This uses a grammar `internalize.ohm` to pattern match the incoming code. Then, it uses rewrite rules `internalize.rwr` to actually perform the conversion to internal form. The internal form, in this simple example, isn't much - we just recognize newlines, count them, and insert tokens into the code stream for tracking source lines related to generated code lines. This is kind of like the `#line` directive in C compilers. The inserted tokens are of the form `⎩...⎭\n`, ie. unicode brackets wrapping an integer. The line numbers are tracked in `support.mjs` and the current line number is interpolated using the `rwr` syntax `⎨getlineinc⎬` (which returns the line number as a string, and increments the line counter).
    - This conversion doesn't do much in this example, but is an indicative place-holder for what might be done in larger projects
@@ -95,20 +101,20 @@ and replace it some more with `defsynonym i ≡ %toint(word) ⎩NNNN⎭ %push(i)
    - the rewrite rules `emitpython.rwr` matches up one rewrite rule for every grammar rule - again, there's more here than is needed for this simple example - I stole the rewrite rules from the other project and just hacked on a few rules to do what I wanted for this example, leaving the rest just sitting there untouched and unused - feel free to clean it up ...
    - the emitter produces 2 outputs (1) dumb, non-optimized Python code, and, (2) "better" Python code that has been peepholed. This time, the peepholer is specifically tuned for Python. Even this simple example uses peepholing twice. At this point in the pipeline, we use `peephole_py.ohm` and `peephole_py.rwr` to replace silly phrases of code with less-silly phrases of code. For example, the `notnot` peephole rule removes the redundant pair of `nots`. Generating code in this way - generate dumb code, then make it less dumb - reduces cognitive load and de-tangles the issues of generating code from optimizing code.
    - at this point in time, I won't expend the effort to describe what the other rewrite rules do - if you can't figure them out, contact me on the forth-ish discord https://discord.gg/sKTdyBdK7A for discussion and further explanation (and possible inclusion in this `README.md`)
+4. unconvert the intermediate form into legal Python code 
+   - turn internal line numbers into legal Python comments
+   - indent the code according to Python requirements using the tiny program `indenter.mjs` (the internal form uses unicode bracket symbols `⤷` and `⤶` to generate code using bracketing notions that are more easily accepted by current parsing technologies - we need to unfold this stuff into legal Python indentation before asking Python to run the code 
+   - again, not rocket science (the goal is to make this so easy that it could be done in only a few hours, and not to be a multi-month project which would be avoided)
 
 # Usage
 `make`
 
 ## What does the Makefile do?
-There are 3 steps
+There are 2 steps
 1. Convert the diagram to JSON using `pbp/das/das2json.mjs`. 
    - This mostly consists of stripping noise out of the .drawio file, e.g. the huge volume of graphics-rendering-only information, leaving only semantically interesting information
    - using dictionaries and code to inference which ports belong to which parts - not rocket science (this _is_ written in javascript :-)
    - building wiring tables - again not rocket science
 2. Run the transmogrifier
    - this uses the JSON file plus a few bits of `.py` code to run the transmogrifier (this begins with `main.py` and imports `pbp/kernel/kernel0d.py` to deal with the JSON "graph")
-3. unconvert the intermediate form into legal Python code 
-   - turn internal line numbers into legal Python comments
-   - indent the code according to Python requirements using the tiny program `indenter.mjs` (the internal form uses unicode bracket symbols `⤷` and `⤶` to generate code using bracketing notions that are more easily accepted by current parsing technologies - we need to unfold this stuff into legal Python indentation before asking Python to run the code 
-   - again, not rocket science (the goal is to make this so easy that it could be done in only a few hours, and not to be a multi-month project which would be avoided)
    
