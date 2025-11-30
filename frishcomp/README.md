@@ -1,3 +1,63 @@
+# STATUS
+REPL seems to work in minimal testing.
+Compiler appears to work, but calling compiled code fails at line 555 of `forthish.frish` (line 770 of `out.1.py`).
+
+## To build: 
+
+`make`
+
+This builds the Python, then runs it, giving the `OK` prompt.
+
+At the prompt, type `1 2 + .` and this prints 3.
+
+At the next prompt, type `: plus + ;`, this compiles the `plus` word and gives a 3rd prompt `OK`.
+
+At the 3rd prompt, type `2 3 plus` - this fails. [guess: compiler writes to RAM incorrectly, or, xinterpret
+calls the compiled word incorrectly - TBD\.
+
+Log of run, fail:
+
+```
+$ make
+make
+rm -f out.*
+rm -f *.json
+node pbp/das/das2json.mjs frish.drawio
+Created: frish.drawio.json
+./check-for-span-error.bash frish.drawio.json
+python3 main.py . 'forthish.frish' main frish.drawio.json | node ./pbp/kernel/splitoutput.js
+Created file: out.0.frish
+Created file: out.1.frish
+Created file: out.0.py
+Created file: out.1.py
+./run.bash out.1.py
+OK 1 2 + .
+1 2 + .
+3
+OK : plus + ;
+: plus + ;
+OK 2 3 plus
+2 3 plus
+Traceback (most recent call last):
+  File "/Users/paultarvydas/projects/forthish-git/frishcomp/out.1.py", line 892, in <module>
+    ok()                                                   #line 653#line 654
+    ^^^^
+  File "/Users/paultarvydas/projects/forthish-git/frishcomp/out.1.py", line 866, in ok
+    xinterpret()                               #line 631#line 632#line 633#line 634#line 635
+    ^^^^^^^^^^^^
+  File "/Users/paultarvydas/projects/forthish-git/frishcomp/out.1.py", line 830, in xinterpret
+    State.RAM [ xt]()
+  File "/Users/paultarvydas/projects/forthish-git/frishcomp/out.1.py", line 770, in doword
+    State.RAM [ State.W]()                         #line 555#line 556
+    ^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'int' object is not callable
+make: *** [main] Error 1
+$ 
+```
+
+
+# README
+
 This directory contains a version of simple.py written in a PML - Portable Meta Language. 
 
 The PML is called `frish`.

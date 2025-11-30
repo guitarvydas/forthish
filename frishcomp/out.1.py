@@ -762,13 +762,13 @@ def doword ():
     #architecturally sound since W is unconditionally updated before each⎩546⎭
     #primitive invocation.⎩547⎭
     #                                                  #line 548#line 549
-    State.R.append ( IP)                               #line 550
-    IP =  W+ 1                                         #line 551
+    State.R.append ( State.IP)                         #line 550
+    State.IP =  State.W+ 1                             #line 551
     while ( -1!= State.RAM [ State.IP]):               #line 552
-        W =  State.RAM [ State.IP]                     #line 553
+        State.W =  State.RAM [ State.IP]               #line 553
         State.IP =  State.IP+ 1                        #line 554
         State.RAM [ State.W]()                         #line 555#line 556
-    IP = State.R.pop ()                                #line 557#line 558#line 559
+    State.IP = State.R.pop ()                          #line 557#line 558#line 559
 
 def xcolon ():
     global State                                       #line 560
@@ -779,7 +779,7 @@ def xcolon ():
     xword()                                            #line 564
 
     name = State.S.pop ()                              #line 565
-    code( name, doword)                                #line 566
+    code( name, 0, doword)                             #line 566
     State.compiling = True                             #line 567#line 568#line 569
 code(":",0,  xcolon)
 

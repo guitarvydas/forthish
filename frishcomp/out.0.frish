@@ -547,14 +547,14 @@ architecturally sound since W is unconditionally updated before each⎩546⎭
 primitive invocation.⎩547⎭
 ⌉⎩548⎭
 ⎩549⎭
-    %rpush (IP)⎩550⎭
-    IP ⇐ W + 1⎩551⎭
+    %rpush (State.IP)⎩550⎭
+    State.IP ⇐ State.W + 1⎩551⎭
     while (-1 != State.RAM[State.IP]) {⎩552⎭
-        W ⇐ State.RAM[State.IP]⎩553⎭
+        State.W ⇐ State.RAM[State.IP]⎩553⎭
 	State.IP ⇐ State.IP + 1⎩554⎭
 	@State.RAM[State.W]⎩555⎭
     }⎩556⎭
-    IP ⇐ %rpop⎩557⎭
+    State.IP ⇐ %rpop⎩557⎭
 }⎩558⎭
 ⎩559⎭
 defsubr xcolon ":" {⎩560⎭
@@ -563,7 +563,7 @@ defsubr xcolon ":" {⎩560⎭
     %push (blank)⎩563⎭
     @xword⎩564⎭
     deftemp name ⇐ %pop⎩565⎭
-    %funcall code(name, doword)⎩566⎭
+    %funcall code(name, 0, doword)⎩566⎭
     %setCompilingState⎩567⎭
 }⎩568⎭
 ⎩569⎭
