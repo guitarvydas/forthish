@@ -792,101 +792,121 @@ def xsemi ():
     State.compiling = False                            #line 574#line 575#line 576
 code(";", 1, xsemi)
 
-def xinterpret ():
+def notfound (word):
     global State                                       #line 577
-    # ( string --) Execute word.                       #line 578#line 579
-    xfind()                                            #line 580
-    # 3 possible results from xfind:⎩581⎭
-    #        1. (name 0) if not found,⎩582⎭
-    #	2. (xt 1) if found and word is immediate,⎩583⎭
-    #	3. (xt -1) if found and word is normal           #line 584
+
+    State.S.clear()                                    #line 578
+
+    State.R.clear()                                    #line 579
+    print ( word, end="")                              #line 580
+    print ( "?", end="")                               #line 581
+    print ()                                           #line 582#line 583#line 584
+
+def xinterpret ():
+    global State                                       #line 585
+    # ( string --) Execute word.                       #line 586#line 587
+    xfind()                                            #line 588
+    # 3 possible results from xfind:⎩589⎭
+    #        1. (name 0) if not found,⎩590⎭
+    #	2. (xt 1) if found and word is immediate,⎩591⎭
+    #	3. (xt -1) if found and word is normal           #line 592
 
     result = State.S.pop ()
 
-    foundImmediate = ( result ==  1)                   #line 585
+    foundImmediate = ( result ==  1)                   #line 593
 
     item = State.S.pop ()
 
-    foundNormal = ( result ==  -1)                     #line 586
+    foundNormal = ( result ==  -1)                     #line 594
 
-    notFound = ( result ==  0)                         #line 587
+    notFound = ( result ==  0)                         #line 595
 
-    found = ( foundImmediate or  foundNormal)          #line 588
-    if ( found):
+    found = ( foundImmediate or  foundNormal)          #line 596
+    if ( found):                                       #line 597
 
-        xt =  item                                     #line 589
-        if State.compiling:                            #line 590
-            if  foundImmediate:                        #line 591
-                State.W =  xt                          #line 592
+        xt =  item                                     #line 598
+        if State.compiling:                            #line 599
+            # found and compiling                      #line 600
+            if ( foundImmediate):                      #line 601
+                # found and compiling and immediate    #line 602
+                State.W =  xt                          #line 603
                 State.IP =  -1
-                # Dummy to hold place in return stack. #line 593
+                # Dummy to hold place in return stack. #line 604
                 State.RAM [ xt]()
-                # Execute code.                        #line 594
-            else:                                      #line 595
+                # Execute code.                        #line 605
+            else:                                      #line 606
+                # found and compiling and not immediate #line 607
 
-                State.RAM.append ( xt)                 #line 596#line 597
-        else:                                          #line 598
-            # not compiling                            #line 599
+                State.RAM.append ( xt)                 #line 608#line 609
+        else:                                          #line 610
+            # found and not compiling                  #line 611
+            State.W =  xt                              #line 612
+            State.IP =  -1
+            # Dummy to hold place in return stack.     #line 613
             State.RAM [ xt]()
-            # Execute code.                            #line 600#line 601
-    else:
+            # Execute code.                            #line 614#line 615
+    else:                                              #line 616
 
-        word =  item                                   #line 602
-        if (re.match(r"^-?\d*$", word)):               #line 603
-            State.S.push (int ( word))                 #line 604
-            if State.compiling:                        #line 605
-                literalize()                           #line 606#line 607
-        elif (re.match(r"^-?d*\.?\d*$", word)):        #line 608
-            State.S.push (float ( word))               #line 609
-            if State.compiling:                        #line 610
-                literalize()                           #line 611#line 612
-        else:                                          #line 613
-
-            State.S.clear()                            #line 614
-
-            State.R.clear()                            #line 615
-            print ( word, end="")                      #line 616
-            print ( "?", end="")                       #line 617
-            print ()                                   #line 618
-            return  False                              #line 619#line 620#line 621
-    return  True                                       #line 622#line 623#line 624
+        word =  item                                   #line 617
+        # not found                                    #line 618
+        if State.compiling:                            #line 619
+            # not found and compiling                  #line 620
+            if (re.match(r"^-?\d*$", word)):           #line 621
+                State.S.push (int ( word))             #line 622
+                literalize()                           #line 623
+            elif (re.match(r"^-?d*\.?\d*$", word)):    #line 624
+                State.S.push (float ( word))           #line 625
+                literalize()                           #line 626
+            else:                                      #line 627
+                notfound( word)                        #line 628
+                return  False                          #line 629#line 630
+        else:                                          #line 631
+            # not found and not compiling              #line 632
+            if (re.match(r"^-?\d*$", word)):           #line 633
+                State.S.push (int ( word))             #line 634
+            elif (re.match(r"^-?d*\.?\d*$", word)):    #line 635
+                State.S.push (float ( word))           #line 636
+            else:                                      #line 637
+                notfound( word)                        #line 638
+                return  False                          #line 639#line 640#line 641#line 642
+    return  True                                       #line 643#line 644#line 645
 code("interpret",0,  xinterpret)
 
 def ok ():
-    global State                                       #line 625
-    # ( --) Interaction loop -- REPL                   #line 626
+    global State                                       #line 646
+    # ( --) Interaction loop -- REPL                   #line 647
 
-    blank =  32                                        #line 627
-    while  True:                                       #line 628
+    blank =  32                                        #line 648
+    while  True:                                       #line 649
 
         State.BUFF = input("OK ")
         State.BUFP = 0
-                                                       #line 629
-        while not (State.BUFP >= len(State.BUFF)):     #line 630
-            xinterpret()                               #line 631#line 632#line 633#line 634#line 635
+                                                       #line 650
+        while not (State.BUFP >= len(State.BUFF)):     #line 651
+            xinterpret()                               #line 652#line 653#line 654#line 655#line 656
 
 def debugok ():
-    global State                                       #line 636
-    # ( --) Interaction loop -- REPL                   #line 637
+    global State                                       #line 657
+    # ( --) Interaction loop -- REPL                   #line 658
 
-    blank =  32                                        #line 638
+    blank =  32                                        #line 659
 
     State.BUFF = "7 ."
     State.BUFP = 0
-                                                       #line 639
-    while not (State.BUFP >= len(State.BUFF)):         #line 640
-        if ( xinterpret()):                            #line 641
-            print ( " ok", end="")                     #line 642
-            print ()                                   #line 643#line 644
+                                                       #line 660
+    while not (State.BUFP >= len(State.BUFF)):         #line 661
+        if ( xinterpret()):                            #line 662
+            print ( " ok", end="")                     #line 663
+            print ()                                   #line 664#line 665
         print ( State.BUFP, end="")
         print ( " -- ", end="")
         print ( State.BUFF, end="")
-        print ()                                       #line 645
-        xdots()                                        #line 646#line 647
+        print ()                                       #line 666
+        xdots()                                        #line 667#line 668
     print ( State.BUFP, end="")
     print ( " == ", end="")
     print ( State.BUFF, end="")
-    print ()                                           #line 648
-    xdot()                                             #line 649
-    xdots()                                            #line 650#line 651#line 652
-ok()                                                   #line 653#line 654
+    print ()                                           #line 669
+    xdot()                                             #line 670
+    xdots()                                            #line 671#line 672#line 673
+ok()                                                   #line 674#line 675

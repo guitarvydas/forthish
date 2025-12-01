@@ -574,6 +574,14 @@ defimmediatesubr xsemi ";"{
     %setNotCompilingState
 }
 
+deffunction notfound (word) {
+    %clearS
+    %clearR
+    %print (word)
+    %print ("?")
+    %eol
+}
+
 defsubr xinterpret "interpret" {
     ⌈ ( string --) Execute word. ⌉
 
@@ -586,38 +594,51 @@ defsubr xinterpret "interpret" {
     deftemp item ⇐ %pop						    defsynonym foundNormal ≡ (result = -1)
     	    	   						    defsynonym notFound ≡ (result = 0)
     	    	   						    defsynonym found ≡ (foundImmediate or foundNormal)
-    if (found) {		    				    defsynonym xt ≡ item
-	if %inCompilationState {		
-	    if foundImmediate {
+    if (found) {
+        defsynonym xt ≡ item    
+        if %inCompilationState {
+	    ⌈ found and compiling ⌉
+	    if (foundImmediate) {
+	        ⌈ found and compiling and immediate ⌉
 		State.W ⇐ xt
-		State.IP ⇐ -1  ⌈ Dummy to hold place in return stack. ⌉
+		State.IP ⇐ -1  ⌈ Dummy to hold place in return stack. ⌉	
 		@State.RAM[xt]  ⌈ Execute code. ⌉
 	    } else {
+	        ⌈ found and compiling and not immediate ⌉
 		%ram+(xt)
-	    }
-	 } else {
-	    ⌈ not compiling ⌉
+            }
+	} else {
+	    ⌈ found and not compiling ⌉
+            State.W ⇐ xt
+	    State.IP ⇐ -1  ⌈ Dummy to hold place in return stack. ⌉	
 	    @State.RAM[xt]  ⌈ Execute code. ⌉
-	 }
-     } else {							    defsynonym word ≡ item
-	 if (%isInteger (word)) {
-	     %push (%toint (word))
-	     if %inCompilationState {
-		     @literalize
-	     }
-	 } elif (%isFloat (word)) {
-	     %push (%tofloat (word))
-	     if %inCompilationState {
-		     @literalize
-	     }
-	 } else {
-	     %clearS
-	     %clearR
-	     %print (word)
-	     %print ("?")
-	     %eol
-	     return False
-	 }
+	}
+    } else {
+        defsynonym word ≡ item
+	⌈ not found ⌉
+	if %inCompilationState {
+	    ⌈ not found and compiling ⌉
+	    if (%isInteger (word)) {
+                %push (%toint (word))
+                @literalize
+	    } elif (%isFloat (word)) {
+                %push (%tofloat (word))
+                @literalize
+	    } else {
+	        %funcall notfound (word)
+		return False
+	    }
+	} else {
+	    ⌈ not found and not compiling ⌉
+	    if (%isInteger (word)) {
+                %push (%toint (word))
+	    } elif (%isFloat (word)) {
+                %push (%tofloat (word))
+	    } else {
+	        %funcall notfound (word)
+		return False
+	    }
+	}
     }
     return True
 }
