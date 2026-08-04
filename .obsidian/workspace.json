@@ -4,19 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "d2636df2ba7b6a04",
+        "id": "d54389dd3881fabc",
         "type": "tabs",
         "children": [
           {
-            "id": "400d5a4f3fb17c6c",
+            "id": "94981b86a4d86500",
             "type": "leaf",
             "state": {
-              "type": "release-notes",
-              "state": {
-                "currentVersion": "1.10.6"
-              },
-              "icon": "lucide-book-up",
-              "title": "Release Notes 1.10.6"
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
             }
           }
         ]
@@ -167,20 +165,20 @@
       "bases:Create new base": false
     }
   },
-  "active": "400d5a4f3fb17c6c",
+  "active": "94981b86a4d86500",
   "lastOpenFiles": [
+    "frishcomp/#preopt.rwr#",
     "frishcomp/out.1.py",
     "frishcomp/out.0.py",
     "frishcomp/out.1.frish",
     "frishcomp/out.0.frish",
-    "frishcomp/out.✗",
+    "basic/comp/temp-fcomp.py",
     "frishcomp/#forthish.frish#",
+    "frishcomp/out.✗",
     "frishcomp/fcomp-doodles-xinterpret.drawio.png",
     "basic/comp/#old-fcomp.py#",
     "frishcomp/#README.md#",
     "frishcomp/run.bash",
-    "frishcomp/frish.drawio.json",
-    "frishcomp/#frish.ohm#",
     "frishcomp/todo-notes.md",
     "frishcomp/script.md",
     "frishcomp/das/frish-main.drawio.svg",
